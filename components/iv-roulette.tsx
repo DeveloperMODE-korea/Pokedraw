@@ -343,7 +343,7 @@ export function IVRoulette() {
                         <div className="text-xs text-muted-foreground">완벽한 개체값</div>
                       </div>
                       <div className="pixel-box p-3">
-                        <div className="text-2xl font-bold text-secondary">{stats.averagePercent}%</div>
+                        <div className="text-2xl font-bold text-foreground">{stats.averagePercent}%</div>
                         <div className="text-xs text-foreground">평균</div>
                       </div>
                       <div className="pixel-box p-3">
