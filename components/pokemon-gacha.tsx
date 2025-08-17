@@ -368,40 +368,80 @@ export function PokemonGacha() {
               <div className="space-y-4">
                 <Label className="pixel-title text-sm">세대별 타입 필터</Label>
                 <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((gen) => (
-                    <div key={gen} className={`pixel-box p-3 space-y-2 ${!filters.gens.includes(gen) ? 'opacity-50' : ''}`}>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-sm font-medium ${!filters.gens.includes(gen) ? 'text-muted-foreground' : 'text-foreground'}`}>
-                          {gen}세대
-                        </span>
-                        {getGenerationTypes(gen).length > 0 && (
-                          <Badge variant="outline" className="text-xs">
-                            {getGenerationTypes(gen).map(type => TYPE_TRANSLATIONS[type] || type).join(', ')}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {POKEMON_TYPES.map((type) => (
-                          <Button
-                            key={type}
-                            variant="outline"
-                            size="sm"
-                            disabled={!filters.gens.includes(gen)}
-                            className={`pixel-button text-xs ${
-                              isGenerationTypeActive(gen, type)
-                                ? `${TYPE_COLORS[type]} text-white`
-                                : filters.gens.includes(gen)
-                                ? "bg-transparent border-muted-foreground hover:bg-muted"
-                                : "bg-muted text-muted-foreground border-muted cursor-not-allowed"
-                            }`}
-                            onClick={() => toggleGenerationType(gen, type)}
+                  {[1, 2, 3, 4, 5].map((gen) => {
+                    const isGenerationSelected = filters.gens.includes(gen)
+                    return (
+                      <div 
+                        key={gen} 
+                        style={{
+                          opacity: isGenerationSelected ? 1 : 0.3,
+                          backgroundColor: isGenerationSelected ? 'transparent' : 'rgba(0,0,0,0.05)',
+                          transition: 'all 0.2s ease'
+                        }}
+                        className="pixel-box p-3 space-y-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span 
+                            style={{
+                              color: isGenerationSelected ? 'inherit' : '#6b7280'
+                            }}
+                            className="text-sm font-medium"
                           >
-                            {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
-                          </Button>
-                        ))}
+                            {gen}세대
+                          </span>
+                          {getGenerationTypes(gen).length > 0 && (
+                            <Badge variant="outline" className="text-xs">
+                              {getGenerationTypes(gen).map(type => TYPE_TRANSLATIONS[type] || type).join(', ')}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {POKEMON_TYPES.map((type) => {
+                            const isTypeActive = isGenerationTypeActive(gen, type)
+                            return (
+                              <Button
+                                key={type}
+                                variant="outline"
+                                size="sm"
+                                disabled={!isGenerationSelected}
+                                style={{
+                                  backgroundColor: isTypeActive 
+                                    ? TYPE_COLORS[type].replace('bg-', '') === 'red' ? '#ef4444' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'orange' ? '#f97316' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'yellow' ? '#eab308' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'blue' ? '#3b82f6' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'green' ? '#22c55e' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'pink' ? '#ec4899' :
+                                      '#6b7280'
+                                    : isGenerationSelected 
+                                    ? 'transparent' 
+                                    : '#f3f4f6',
+                                  color: isTypeActive ? 'white' : isGenerationSelected ? 'inherit' : '#9ca3af',
+                                  borderColor: isTypeActive 
+                                    ? TYPE_COLORS[type].replace('bg-', '') === 'red' ? '#ef4444' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'orange' ? '#f97316' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'yellow' ? '#eab308' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'blue' ? '#3b82f6' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'green' ? '#22c55e' :
+                                      TYPE_COLORS[type].replace('bg-', '') === 'pink' ? '#ec4899' :
+                                      '#6b7280'
+                                    : isGenerationSelected 
+                                    ? '#d1d5db' 
+                                    : '#e5e7eb',
+                                  cursor: isGenerationSelected ? 'pointer' : 'not-allowed',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                className="pixel-button text-xs"
+                                onClick={() => toggleGenerationType(gen, type)}
+                              >
+                                {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
+                              </Button>
+                            )
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
 
