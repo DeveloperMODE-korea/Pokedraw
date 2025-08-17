@@ -27,9 +27,15 @@ export interface PokemonLite {
   generation: number
 }
 
+export interface GenerationTypeFilter {
+  generation: number
+  types: string[]
+}
+
 export interface GachaFilter {
   gens: number[]
   types: string[]
+  generationTypeFilters: GenerationTypeFilter[]
   bst: [number, number]
   count: number
   allowDup: boolean

@@ -28,19 +28,55 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
     try {
       let candidateIds: number[] = []
 
-      // 타입 필터가 있는 경우: 타입별로 포켓몬을 가져온 후 세대 필터 적용
-      if (filters.types.length > 0) {
-        const typeIds = await getPokemonIdsByType(filters.types)
-        const genIds = await getPokemonIdsByGeneration(filters.gens)
+      // 세대별 타입 필터가 있는 경우
+      if (filters.generationTypeFilters.length > 0) {
+        const allGenIds: number[] = []
         
-        // 타입과 세대의 교집합 구하기
-        const typeSet = new Set(typeIds)
-        candidateIds = genIds.filter(id => typeSet.has(id))
+        for (const genFilter of filters.generationTypeFilters) {
+          if (filters.gens.includes(genFilter.generation)) {
+            // 해당 세대의 포켓몬 ID 가져오기
+            const genIds = await getPokemonIdsByGeneration([genFilter.generation])
+            
+            // 해당 세대에 타입 필터가 있는 경우
+            if (genFilter.types.length > 0) {
+              const typeIds = await getPokemonIdsByType(genFilter.types)
+              const typeSet = new Set(typeIds)
+              const filteredGenIds = genIds.filter(id => typeSet.has(id))
+              allGenIds.push(...filteredGenIds)
+              console.log(`${genFilter.generation}세대 ${genFilter.types.join(', ')} 타입 필터 적용 후: ${filteredGenIds.length}마리`)
+            } else {
+              // 타입 필터가 없는 경우 해당 세대 전체
+              allGenIds.push(...genIds)
+              console.log(`${genFilter.generation}세대 전체: ${genIds.length}마리`)
+            }
+          }
+        }
         
-        console.log(`타입 필터 적용 후: ${candidateIds.length}마리`)
+        // 선택된 세대 중 필터가 없는 세대들 추가
+        const filteredGens = filters.generationTypeFilters.map(f => f.generation)
+        const unfilteredGens = filters.gens.filter(gen => !filteredGens.includes(gen))
+        
+        if (unfilteredGens.length > 0) {
+          const unfilteredIds = await getPokemonIdsByGeneration(unfilteredGens)
+          allGenIds.push(...unfilteredIds)
+          console.log(`필터 없는 세대 ${unfilteredGens.join(', ')}: ${unfilteredIds.length}마리`)
+        }
+        
+        candidateIds = [...new Set(allGenIds)].sort((a, b) => a - b)
+        console.log(`세대별 타입 필터 적용 후: ${candidateIds.length}마리`)
       } else {
-        // 타입 필터가 없는 경우: 세대별로만 가져오기
-        candidateIds = await getPokemonIdsByGeneration(filters.gens)
+        // 기존 방식: 전체 타입 필터 적용
+        if (filters.types.length > 0) {
+          const typeIds = await getPokemonIdsByType(filters.types)
+          const genIds = await getPokemonIdsByGeneration(filters.gens)
+          
+          const typeSet = new Set(typeIds)
+          candidateIds = genIds.filter(id => typeSet.has(id))
+          
+          console.log(`타입 필터 적용 후: ${candidateIds.length}마리`)
+        } else {
+          candidateIds = await getPokemonIdsByGeneration(filters.gens)
+        }
       }
 
       // 결과가 너무 많은 경우 제한
@@ -55,7 +91,7 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
       // BST 필터 적용
       const filteredPokemon = pokemonData.filter((p) => p.bst >= filters.bst[0] && p.bst <= filters.bst[1])
 
-      console.log(`최종 필터 결과: ${filteredPokemon.length}마리 (세대: ${filters.gens.join(',')}, 타입: ${filters.types.join(',') || '전체'}, BST: ${filters.bst[0]}-${filters.bst[1]})`)
+      console.log(`최종 필터 결과: ${filteredPokemon.length}마리 (세대: ${filters.gens.join(',')}, BST: ${filters.bst[0]}-${filters.bst[1]})`)
 
       setPokemon(filteredPokemon)
     } catch (err) {
@@ -64,7 +100,7 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
     } finally {
       setLoading(false)
     }
-  }, [filters.gens, filters.types, filters.bst])
+  }, [filters.gens, filters.types, filters.generationTypeFilters, filters.bst])
 
   useEffect(() => {
     fetchData()

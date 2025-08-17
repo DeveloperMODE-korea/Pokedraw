@@ -199,6 +199,7 @@ export function PokemonGacha() {
   const [filters, setFilters] = useState<GachaFilter>({
     gens: [1, 2, 3, 4, 5],
     types: [],
+    generationTypeFilters: [],
     bst: [200, 720],
     count: 6,
     allowDup: false,
@@ -260,6 +261,36 @@ export function PokemonGacha() {
     })
   }
 
+  const toggleGenerationType = (gen: number, type: string) => {
+    setFilters((prev) => {
+      const existingFilter = prev.generationTypeFilters.find(f => f.generation === gen)
+      
+      if (existingFilter) {
+        const newTypes = existingFilter.types.includes(type) 
+          ? existingFilter.types.filter(t => t !== type) 
+          : [...existingFilter.types, type]
+        
+        const newFilters = newTypes.length > 0
+          ? prev.generationTypeFilters.map(f => 
+              f.generation === gen ? { ...f, types: newTypes } : f
+            )
+          : prev.generationTypeFilters.filter(f => f.generation !== gen)
+        
+        console.log(`${gen}세대 타입 필터 변경: ${newTypes.join(', ')}`)
+        return { ...prev, generationTypeFilters: newFilters }
+      } else {
+        const newFilters = [...prev.generationTypeFilters, { generation: gen, types: [type] }]
+        console.log(`${gen}세대 타입 필터 추가: ${type}`)
+        return { ...prev, generationTypeFilters: newFilters }
+      }
+    })
+  }
+
+  const getGenerationTypes = (gen: number): string[] => {
+    const filter = filters.generationTypeFilters.find(f => f.generation === gen)
+    return filter ? filter.types : []
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       {/* Header */}
@@ -310,26 +341,62 @@ export function PokemonGacha() {
               {/* Generation Filter */}
               <div className="space-y-2">
                 <Label className="pixel-title text-sm">세대</Label>
-                                 <div className="flex flex-wrap gap-2">
-                   {[1, 2, 3, 4, 5].map((gen) => (
-                     <Button
-                       key={gen}
-                       variant="outline"
-                       size="sm"
-                       className={`pixel-button ${
-                         filters.gens.includes(gen) ? "bg-primary text-primary-foreground" : "bg-transparent"
-                       }`}
-                       onClick={() => toggleGeneration(gen)}
-                     >
-                       {gen}세대
-                     </Button>
-                   ))}
-                 </div>
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3, 4, 5].map((gen) => (
+                    <Button
+                      key={gen}
+                      variant="outline"
+                      size="sm"
+                      className={`pixel-button ${
+                        filters.gens.includes(gen) ? "bg-primary text-primary-foreground" : "bg-transparent"
+                      }`}
+                      onClick={() => toggleGeneration(gen)}
+                    >
+                      {gen}세대
+                    </Button>
+                  ))}
+                </div>
               </div>
 
-              {/* Type Filter */}
+              {/* Generation Type Filters */}
+              <div className="space-y-4">
+                <Label className="pixel-title text-sm">세대별 타입 필터</Label>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((gen) => (
+                    <div key={gen} className="pixel-box p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{gen}세대</span>
+                        {getGenerationTypes(gen).length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            {getGenerationTypes(gen).map(type => TYPE_TRANSLATIONS[type] || type).join(', ')}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {POKEMON_TYPES.map((type) => (
+                          <Button
+                            key={type}
+                            variant="outline"
+                            size="sm"
+                            className={`pixel-button text-xs ${
+                              getGenerationTypes(gen).includes(type)
+                                ? `${TYPE_COLORS[type]} text-white`
+                                : "bg-transparent border-muted-foreground"
+                            }`}
+                            onClick={() => toggleGenerationType(gen, type)}
+                          >
+                            {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Global Type Filter */}
               <div className="space-y-2">
-                <Label className="pixel-title text-sm">타입 (선택사항)</Label>
+                <Label className="pixel-title text-sm">전체 타입 필터 (선택사항)</Label>
                 <div className="flex flex-wrap gap-2">
                   {POKEMON_TYPES.map((type) => (
                     <Button
