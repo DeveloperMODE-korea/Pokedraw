@@ -239,17 +239,25 @@ export function PokemonGacha() {
   }
 
   const toggleGeneration = (gen: number) => {
-    setFilters((prev) => ({
-      ...prev,
-      gens: prev.gens.includes(gen) ? prev.gens.filter((g) => g !== gen) : [...prev.gens, gen],
-    }))
+    setFilters((prev) => {
+      const newGens = prev.gens.includes(gen) ? prev.gens.filter((g) => g !== gen) : [...prev.gens, gen]
+      console.log(`세대 필터 변경: ${newGens.join(', ')}`)
+      return {
+        ...prev,
+        gens: newGens,
+      }
+    })
   }
 
   const toggleType = (type: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      types: prev.types.includes(type) ? prev.types.filter((t) => t !== type) : [...prev.types, type],
-    }))
+    setFilters((prev) => {
+      const newTypes = prev.types.includes(type) ? prev.types.filter((t) => t !== type) : [...prev.types, type]
+      console.log(`타입 필터 변경: ${newTypes.join(', ')}`)
+      return {
+        ...prev,
+        types: newTypes,
+      }
+    })
   }
 
   return (
@@ -302,21 +310,21 @@ export function PokemonGacha() {
               {/* Generation Filter */}
               <div className="space-y-2">
                 <Label className="pixel-title text-sm">세대</Label>
-                <div className="flex flex-wrap gap-2">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
-                    <Button
-                      key={gen}
-                      variant="outline"
-                      size="sm"
-                      className={`pixel-button ${
-                        filters.gens.includes(gen) ? "bg-primary text-primary-foreground" : "bg-transparent"
-                      }`}
-                      onClick={() => toggleGeneration(gen)}
-                    >
-                      {gen}세대
-                    </Button>
-                  ))}
-                </div>
+                                 <div className="flex flex-wrap gap-2">
+                   {[1, 2, 3, 4, 5].map((gen) => (
+                     <Button
+                       key={gen}
+                       variant="outline"
+                       size="sm"
+                       className={`pixel-button ${
+                         filters.gens.includes(gen) ? "bg-primary text-primary-foreground" : "bg-transparent"
+                       }`}
+                       onClick={() => toggleGeneration(gen)}
+                     >
+                       {gen}세대
+                     </Button>
+                   ))}
+                 </div>
               </div>
 
               {/* Type Filter */}
@@ -382,8 +390,10 @@ export function PokemonGacha() {
               </div>
 
               <div className="text-center text-sm text-muted-foreground">
-                {availablePokemon.length > 0 && (
+                {availablePokemon.length > 0 ? (
                   <span>현재 필터로 {availablePokemon.length}마리의 포켓몬을 뽑을 수 있습니다</span>
+                ) : (
+                  <span className="text-destructive">현재 필터 조건에 맞는 포켓몬이 없습니다</span>
                 )}
               </div>
             </motion.div>

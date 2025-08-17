@@ -242,7 +242,11 @@ export async function getPokemonIdsByGeneration(generations: number[]): Promise<
     }
   }
 
-  return allIds.sort((a, b) => a - b)
+  const sortedIds = allIds.sort((a, b) => a - b)
+  
+  console.log(`세대 ${generations.join(', ')} 필터 결과: ${sortedIds.length}마리`)
+  
+  return sortedIds
 }
 
 // Get Pokemon IDs by type
@@ -267,7 +271,12 @@ export async function getPokemonIdsByType(types: string[]): Promise<number[]> {
     }
   }
 
-  return [...new Set(allIds)].sort((a, b) => a - b)
+  // 중복 제거 및 정렬
+  const uniqueIds = [...new Set(allIds)].sort((a, b) => a - b)
+  
+  console.log(`타입 ${types.join(', ')} 필터 결과: ${uniqueIds.length}마리`)
+  
+  return uniqueIds
 }
 
 // Convert API data to our PokemonLite format
