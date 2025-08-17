@@ -266,7 +266,7 @@ export function PokemonGacha() {
       {/* Header */}
       <div className="pixel-box p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="pixel-title text-2xl text-primary">ㅈㅈ</h2>
+          <h2 className="pixel-title text-2xl text-primary">포켓몬 가챠</h2>
           <Button
             variant="outline"
             className="pixel-button bg-transparent"
