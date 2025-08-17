@@ -248,14 +248,8 @@ export function NatureRoulette() {
 
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4">
-                  <Button variant="outline" className="pixel-button bg-transparent" onClick={shareResult}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    공유
-                  </Button>
-                  <Button variant="outline" className="pixel-button bg-transparent">
-                    <Heart className="w-4 h-4 mr-2" />
-                    즐겨찾기
-                  </Button>
+                  
+                  
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={spinRoulette}>
                     <RotateCcw className="w-4 h-4 mr-2" />
                     다시 돌리기
