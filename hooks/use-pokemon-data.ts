@@ -35,9 +35,8 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
         candidateIds = candidateIds.filter((id) => typeIds.includes(id))
       }
 
-      // Limit to reasonable number for performance
-      if (candidateIds.length > 500) {
-        candidateIds = candidateIds.slice(0, 500)
+      if (candidateIds.length > 800) {
+        candidateIds = candidateIds.slice(0, 800) // Increased from 500
       }
 
       // Fetch Pokemon data
@@ -49,7 +48,7 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
       setPokemon(filteredPokemon)
     } catch (err) {
       console.error("Failed to fetch Pokemon data:", err)
-      setError("Failed to load Pokemon data. Please try again.")
+      setError("데이터 로딩에 실패했습니다. 다시 시도해주세요.")
     } finally {
       setLoading(false)
     }

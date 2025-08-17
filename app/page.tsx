@@ -10,7 +10,6 @@ export default function HomePage() {
       <header className="pixel-border border-b-2 bg-card p-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="pixel-title text-2xl md:text-4xl text-center text-primary mb-2">POKEDRAW</h1>
-          <p className="text-center text-muted-foreground text-sm">DS 시대 픽셀 감성의 포켓몬 룰렛 & 가챠</p>
         </div>
       </header>
 
@@ -48,10 +47,6 @@ export default function HomePage() {
         {/* Welcome Section */}
         <div className="pixel-box p-6 text-center">
           <h2 className="pixel-title text-xl mb-4 text-primary">Pokedraw에 오신 것을 환영합니다!</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            DS 시대 포켓몬 게임의 향수를 픽셀 퍼펙트한 룰렛과 가챠 시스템으로 경험해보세요. 성격을 뽑거나, 랜덤 개체값을
-            생성하거나, 가챠 시스템을 통해 새로운 포켓몬을 발견해보세요!
-          </p>
         </div>
 
         {/* Feature Cards */}
@@ -129,6 +124,17 @@ export default function HomePage() {
               PokéAPI
             </a>
             에서 제공됩니다
+          </p>
+          <p>
+            개발자:{" "}
+            <a
+              href="https://github.com/DeveloperMODE-korea"
+              className="text-primary hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              DeveloperMODE-korea
+            </a>
           </p>
         </div>
       </footer>

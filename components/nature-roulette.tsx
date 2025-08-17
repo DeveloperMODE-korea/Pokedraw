@@ -11,11 +11,11 @@ import type { Nature, StatKey } from "@/types/pokemon"
 
 const STAT_NAMES: Record<StatKey, string> = {
   hp: "HP",
-  atk: "Attack",
-  def: "Defense",
-  spa: "Sp. Atk",
-  spd: "Sp. Def",
-  spe: "Speed",
+  atk: "공격",
+  def: "방어",
+  spa: "특공",
+  spd: "특방",
+  spe: "스피드",
 }
 
 const STAT_COLORS: Record<StatKey, string> = {
@@ -26,6 +26,34 @@ const STAT_COLORS: Record<StatKey, string> = {
   spd: "bg-green-500",
   spe: "bg-pink-500",
 }
+
+const ROULETTE_COLORS = [
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#F7DC6F",
+  "#BB8FCE",
+  "#85C1E9",
+  "#F8C471",
+  "#82E0AA",
+  "#F1948A",
+  "#85C1E9",
+  "#D7BDE2",
+  "#A9DFBF",
+  "#F9E79F",
+  "#D5A6BD",
+  "#AED6F1",
+  "#A3E4D7",
+  "#FAD7A0",
+  "#D2B4DE",
+  "#A9CCE3",
+  "#ABEBC6",
+  "#F5B7B1",
+]
 
 export function NatureRoulette() {
   const [isSpinning, setIsSpinning] = useState(false)
@@ -71,7 +99,7 @@ export function NatureRoulette() {
 
   const shareResult = () => {
     if (!result) return
-    const text = `I got ${result.nameKo} (${result.nameEn}) nature in Pokedraw! ${result.description}`
+    const text = `포케드로우에서 ${result.nameKo} (${result.nameEn}) 성격을 뽑았어요! ${result.description}`
     navigator.clipboard.writeText(text)
     // Could add toast notification here
   }
@@ -80,51 +108,78 @@ export function NatureRoulette() {
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       {/* Roulette Wheel */}
       <div className="pixel-box p-8">
-        <h2 className="pixel-title text-2xl text-center mb-8 text-primary">Nature Roulette</h2>
+        <h2 className="pixel-title text-2xl text-center mb-8 text-primary">성격 룰렛</h2>
 
         <div className="relative flex justify-center items-center">
-          {/* Roulette Wheel */}
           <div className="relative">
             <motion.div
-              className="w-80 h-80 rounded-full border-4 border-foreground relative overflow-hidden"
+              className="w-80 h-80"
               animate={{ rotate: rotation }}
               transition={{
                 duration: isSpinning ? 2.2 : 0,
                 ease: isSpinning ? "easeOut" : "linear",
               }}
             >
-              {/* Roulette Slices */}
-              {NATURES.map((nature, index) => {
-                const angle = (360 / NATURES.length) * index
-                const nextAngle = (360 / NATURES.length) * (index + 1)
-                const midAngle = (angle + nextAngle) / 2
+              <svg width="320" height="320" viewBox="0 0 320 320" className="border-4 border-foreground rounded-full">
+                {NATURES.map((nature, index) => {
+                  const anglePerSlice = 360 / NATURES.length
+                  const startAngle = index * anglePerSlice
+                  const endAngle = (index + 1) * anglePerSlice
 
-                return (
-                  <div
-                    key={nature.id}
-                    className="absolute w-full h-full"
-                    style={{
-                      transform: `rotate(${angle}deg)`,
-                      clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.cos((nextAngle * Math.PI) / 180)}% ${
-                        50 + 50 * Math.sin((nextAngle * Math.PI) / 180)
-                      }%)`,
-                    }}
-                  >
-                    <div
-                      className={`w-full h-full flex items-start justify-center pt-4 text-xs font-bold ${
-                        index % 2 === 0 ? "bg-accent" : "bg-secondary"
-                      } ${index % 2 === 0 ? "text-accent-foreground" : "text-secondary-foreground"}`}
-                    >
-                      <span
-                        className="transform -rotate-90 whitespace-nowrap"
-                        style={{ transform: `rotate(${-midAngle}deg)` }}
+                  // Convert angles to radians
+                  const startRad = (startAngle * Math.PI) / 180
+                  const endRad = (endAngle * Math.PI) / 180
+
+                  // Calculate path coordinates
+                  const centerX = 160
+                  const centerY = 160
+                  const radius = 150
+
+                  const x1 = centerX + radius * Math.cos(startRad)
+                  const y1 = centerY + radius * Math.sin(startRad)
+                  const x2 = centerX + radius * Math.cos(endRad)
+                  const y2 = centerY + radius * Math.sin(endRad)
+
+                  const largeArcFlag = anglePerSlice > 180 ? 1 : 0
+
+                  const pathData = [
+                    `M ${centerX} ${centerY}`,
+                    `L ${x1} ${y1}`,
+                    `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                    "Z",
+                  ].join(" ")
+
+                  // Text position
+                  const textAngle = startAngle + anglePerSlice / 2
+                  const textRad = (textAngle * Math.PI) / 180
+                  const textRadius = 100
+                  const textX = centerX + textRadius * Math.cos(textRad)
+                  const textY = centerY + textRadius * Math.sin(textRad)
+
+                  return (
+                    <g key={nature.id}>
+                      <path
+                        d={pathData}
+                        fill={ROULETTE_COLORS[index % ROULETTE_COLORS.length]}
+                        stroke="#000000"
+                        strokeWidth="2"
+                      />
+                      <text
+                        x={textX}
+                        y={textY}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontSize="9"
+                        fontWeight="bold"
+                        fill="#000000"
+                        transform={`rotate(${textAngle}, ${textX}, ${textY})`}
                       >
                         {nature.nameKo}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
+                      </text>
+                    </g>
+                  )
+                })}
+              </svg>
             </motion.div>
 
             {/* Pointer */}
@@ -142,7 +197,7 @@ export function NatureRoulette() {
         {/* Spin Button */}
         <div className="text-center mt-8">
           <Button onClick={spinRoulette} disabled={isSpinning} className="pixel-button text-lg px-8 py-3" size="lg">
-            {isSpinning ? "Spinning..." : "Spin Roulette!"}
+            {isSpinning ? "돌리는 중..." : "룰렛 돌리기!"}
           </Button>
         </div>
       </div>
@@ -158,7 +213,7 @@ export function NatureRoulette() {
           >
             <Card className="pixel-box">
               <CardHeader className="text-center">
-                <CardTitle className="pixel-title text-xl text-primary">Result</CardTitle>
+                <CardTitle className="pixel-title text-xl text-primary">결과</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Nature Name */}
@@ -181,7 +236,7 @@ export function NatureRoulette() {
                   )}
                   {!result.up && !result.down && (
                     <Badge variant="secondary" className="px-3 py-1">
-                      Neutral
+                      중립
                     </Badge>
                   )}
                 </div>
@@ -195,15 +250,15 @@ export function NatureRoulette() {
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={shareResult}>
                     <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                    공유
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent">
                     <Heart className="w-4 h-4 mr-2" />
-                    Favorite
+                    즐겨찾기
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={spinRoulette}>
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Spin Again
+                    다시 돌리기
                   </Button>
                 </div>
               </CardContent>

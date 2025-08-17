@@ -35,6 +35,27 @@ const POKEMON_TYPES = [
   "fairy",
 ]
 
+const TYPE_TRANSLATIONS: { [key: string]: string } = {
+  normal: "노말",
+  fire: "불꽃",
+  water: "물",
+  electric: "전기",
+  grass: "풀",
+  ice: "얼음",
+  fighting: "격투",
+  poison: "독",
+  ground: "땅",
+  flying: "비행",
+  psychic: "에스퍼",
+  bug: "벌레",
+  rock: "바위",
+  ghost: "고스트",
+  dragon: "드래곤",
+  dark: "악",
+  steel: "강철",
+  fairy: "페어리",
+}
+
 interface PokemonCardProps {
   pokemon: PokemonLite
   onClick: () => void
@@ -75,7 +96,7 @@ function PokemonCard({ pokemon, onClick, delay }: PokemonCardProps) {
           <div className="flex justify-center gap-1 flex-wrap">
             {pokemon.types.map((type) => (
               <Badge key={type} className={`${TYPE_COLORS[type]} text-white text-xs px-2 py-1`}>
-                {type.toUpperCase()}
+                {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
               </Badge>
             ))}
           </div>
@@ -96,7 +117,7 @@ function PokemonCard({ pokemon, onClick, delay }: PokemonCardProps) {
           {/* Generation */}
           <div className="text-center">
             <Badge variant="outline" className="text-xs">
-              Gen {pokemon.generation}
+              {pokemon.generation}세대
             </Badge>
           </div>
         </CardContent>
@@ -142,24 +163,24 @@ function PokemonModal({ pokemon, isOpen, onClose }: PokemonModalProps) {
             <div className="flex justify-center gap-2">
               {pokemon.types.map((type) => (
                 <Badge key={type} className={`${TYPE_COLORS[type]} text-white px-3 py-1`}>
-                  {type.toUpperCase()}
+                  {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
                 </Badge>
               ))}
             </div>
 
             <div className="pixel-box p-3 space-y-2">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Base Stat Total:</span>
+                <span className="text-muted-foreground">종족값 총합:</span>
                 <span className="font-bold">{pokemon.bst}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Generation:</span>
-                <span className="font-bold">{pokemon.generation}</span>
+                <span className="text-muted-foreground">세대:</span>
+                <span className="font-bold">{pokemon.generation}세대</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Rarity:</span>
+                <span className="text-muted-foreground">등급:</span>
                 <span className="font-bold">
-                  {pokemon.bst >= 600 ? "Legendary" : pokemon.bst >= 500 ? "Rare" : "Common"}
+                  {pokemon.bst >= 600 ? "전설급" : pokemon.bst >= 500 ? "레어" : "일반"}
                 </span>
               </div>
             </div>
@@ -236,14 +257,14 @@ export function PokemonGacha() {
       {/* Header */}
       <div className="pixel-box p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="pixel-title text-2xl text-primary">Pokemon Gacha</h2>
+          <h2 className="pixel-title text-2xl text-primary">포켓몬 가챠</h2>
           <Button
             variant="outline"
             className="pixel-button bg-transparent"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Settings className="w-4 h-4 mr-2" />
-            Filters
+            필터
           </Button>
         </div>
 
@@ -254,7 +275,7 @@ export function PokemonGacha() {
               <span className="text-sm">{dataError}</span>
               <Button variant="outline" size="sm" className="ml-auto pixel-button bg-transparent" onClick={refetch}>
                 <RefreshCw className="w-3 h-3 mr-1" />
-                Retry
+                다시 시도
               </Button>
             </div>
           </div>
@@ -264,7 +285,7 @@ export function PokemonGacha() {
           <div className="pixel-box p-4 mb-6 text-center">
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
               <Sparkles className="w-4 h-4 animate-spin" />
-              <span>Loading Pokemon data...</span>
+              <span>포켓몬 데이터 로딩 중...</span>
             </div>
           </div>
         )}
@@ -280,7 +301,7 @@ export function PokemonGacha() {
             >
               {/* Generation Filter */}
               <div className="space-y-2">
-                <Label className="pixel-title text-sm">Generations</Label>
+                <Label className="pixel-title text-sm">세대</Label>
                 <div className="flex flex-wrap gap-2">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
                     <Button
@@ -292,7 +313,7 @@ export function PokemonGacha() {
                       }`}
                       onClick={() => toggleGeneration(gen)}
                     >
-                      Gen {gen}
+                      {gen}세대
                     </Button>
                   ))}
                 </div>
@@ -300,7 +321,7 @@ export function PokemonGacha() {
 
               {/* Type Filter */}
               <div className="space-y-2">
-                <Label className="pixel-title text-sm">Types (Optional)</Label>
+                <Label className="pixel-title text-sm">타입 (선택사항)</Label>
                 <div className="flex flex-wrap gap-2">
                   {POKEMON_TYPES.map((type) => (
                     <Button
@@ -314,7 +335,7 @@ export function PokemonGacha() {
                       }`}
                       onClick={() => toggleType(type)}
                     >
-                      {type.toUpperCase()}
+                      {TYPE_TRANSLATIONS[type] || type.toUpperCase()}
                     </Button>
                   ))}
                 </div>
@@ -323,7 +344,7 @@ export function PokemonGacha() {
               {/* BST Range */}
               <div className="space-y-2">
                 <Label className="pixel-title text-sm">
-                  BST Range: {filters.bst[0]} - {filters.bst[1]}
+                  종족값 범위: {filters.bst[0]} - {filters.bst[1]}
                 </Label>
                 <Slider
                   value={filters.bst}
@@ -338,7 +359,7 @@ export function PokemonGacha() {
               {/* Draw Count and Options */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="pixel-title text-sm">Draw Count: {filters.count}</Label>
+                  <Label className="pixel-title text-sm">뽑기 개수: {filters.count}</Label>
                   <Slider
                     value={[filters.count]}
                     onValueChange={([value]) => setFilters((prev) => ({ ...prev, count: value }))}
@@ -355,14 +376,14 @@ export function PokemonGacha() {
                     onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, allowDup: checked as boolean }))}
                   />
                   <Label htmlFor="allowDup" className="text-sm">
-                    Allow Duplicates
+                    중복 허용
                   </Label>
                 </div>
               </div>
 
               <div className="text-center text-sm text-muted-foreground">
                 {availablePokemon.length > 0 && (
-                  <span>{availablePokemon.length} Pokemon available with current filters</span>
+                  <span>현재 필터로 {availablePokemon.length}마리의 포켓몬을 뽑을 수 있습니다</span>
                 )}
               </div>
             </motion.div>
@@ -380,17 +401,17 @@ export function PokemonGacha() {
             {isDrawing ? (
               <>
                 <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-                Drawing...
+                뽑는 중...
               </>
             ) : dataLoading ? (
               <>
                 <Sparkles className="w-5 h-5 mr-2 animate-spin" />
-                Loading...
+                로딩 중...
               </>
             ) : (
               <>
                 <Gift className="w-5 h-5 mr-2" />
-                Draw {filters.count} Pokemon!
+                포켓몬 {filters.count}마리 뽑기!
               </>
             )}
           </Button>
@@ -408,7 +429,7 @@ export function PokemonGacha() {
           >
             <Card className="pixel-box">
               <CardHeader className="text-center">
-                <CardTitle className="pixel-title text-xl text-primary">Your Draw Results ({results.length})</CardTitle>
+                <CardTitle className="pixel-title text-xl text-primary">뽑기 결과 ({results.length}마리)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -425,12 +446,11 @@ export function PokemonGacha() {
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4 mt-6">
                   <Button variant="outline" className="pixel-button bg-transparent">
-                    <Info className="w-4 h-4 mr-2" />
-                    Save Team
+                    <Info className="w-4 h-4 mr-2" />팀 저장
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={drawPokemon}>
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Draw Again
+                    다시 뽑기
                   </Button>
                 </div>
               </CardContent>

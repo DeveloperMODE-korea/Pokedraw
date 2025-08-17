@@ -75,12 +75,59 @@ function isExpired(timestamp: number): boolean {
   return Date.now() - timestamp > CACHE_DURATION
 }
 
+const STORAGE_KEY = "pokedraw_cache"
+const STORAGE_VERSION = "1.0"
+
+interface CacheEntry {
+  data: any
+  timestamp: number
+  version: string
+}
+
+function getFromStorage(key: string): any | null {
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY}_${key}`)
+    if (!stored) return null
+
+    const entry: CacheEntry = JSON.parse(stored)
+    if (entry.version !== STORAGE_VERSION || isExpired(entry.timestamp)) {
+      localStorage.removeItem(`${STORAGE_KEY}_${key}`)
+      return null
+    }
+
+    return entry.data
+  } catch {
+    return null
+  }
+}
+
+function saveToStorage(key: string, data: any): void {
+  try {
+    const entry: CacheEntry = {
+      data,
+      timestamp: Date.now(),
+      version: STORAGE_VERSION,
+    }
+    localStorage.setItem(`${STORAGE_KEY}_${key}`, JSON.stringify(entry))
+  } catch {
+    // Storage full or disabled, ignore
+  }
+}
+
 async function fetchWithCache<T>(url: string): Promise<T> {
   const cacheKey = getCacheKey(url)
-  const cached = cache.get(cacheKey)
 
+  // Check memory cache first
+  const cached = cache.get(cacheKey)
   if (cached && !isExpired(cached.timestamp)) {
     return cached.data
+  }
+
+  // Check localStorage cache
+  const stored = getFromStorage(cacheKey)
+  if (stored) {
+    cache.set(cacheKey, { data: stored, timestamp: Date.now() })
+    return stored
   }
 
   try {
@@ -90,13 +137,20 @@ async function fetchWithCache<T>(url: string): Promise<T> {
     }
 
     const data = await response.json()
+
+    // Save to both caches
     cache.set(cacheKey, { data, timestamp: Date.now() })
+    saveToStorage(cacheKey, data)
+
     return data
   } catch (error) {
     console.error(`Failed to fetch ${url}:`, error)
     // Return cached data if available, even if expired
     if (cached) {
       return cached.data
+    }
+    if (stored) {
+      return stored
     }
     throw error
   }
@@ -163,26 +217,32 @@ export async function fetchType(name: string): Promise<PokeAPIType> {
 }
 
 // Get Pokemon IDs from generation
+const GENERATION_RANGES: Record<number, [number, number]> = {
+  1: [1, 151],
+  2: [152, 251],
+  3: [252, 386],
+  4: [387, 493],
+  5: [494, 649],
+  6: [650, 721],
+  7: [722, 809],
+  8: [810, 905],
+  9: [906, 1025],
+}
+
 export async function getPokemonIdsByGeneration(generations: number[]): Promise<number[]> {
   const allIds: number[] = []
 
   for (const gen of generations) {
-    try {
-      const generation = await fetchGeneration(gen)
-      const ids = generation.pokemon_species
-        .map((species) => {
-          const match = species.url.match(/\/(\d+)\/$/)
-          return match ? Number.parseInt(match[1]) : 0
-        })
-        .filter((id) => id > 0)
-
-      allIds.push(...ids)
-    } catch (error) {
-      console.error(`Failed to fetch generation ${gen}:`, error)
+    const range = GENERATION_RANGES[gen]
+    if (range) {
+      // Use hardcoded ranges instead of API calls
+      for (let id = range[0]; id <= range[1]; id++) {
+        allIds.push(id)
+      }
     }
   }
 
-  return [...new Set(allIds)].sort((a, b) => a - b)
+  return allIds.sort((a, b) => a - b)
 }
 
 // Get Pokemon IDs by type
@@ -211,15 +271,17 @@ export async function getPokemonIdsByType(types: string[]): Promise<number[]> {
 }
 
 // Convert API data to our PokemonLite format
-export async function convertToPokemonLite(pokemon: PokeAPIPokemon): Promise<import("@/types/pokemon").PokemonLite> {
-  let generation = 1
-
-  try {
-    const species = await fetchPokemonSpecies(pokemon.id)
-    generation = getGenerationNumber(species.generation.name)
-  } catch (error) {
-    console.error(`Failed to fetch species for ${pokemon.name}:`, error)
+function getGenerationFromId(id: number): number {
+  for (const [gen, [start, end]] of Object.entries(GENERATION_RANGES)) {
+    if (id >= start && id <= end) {
+      return Number(gen)
+    }
   }
+  return 1
+}
+
+export async function convertToPokemonLite(pokemon: PokeAPIPokemon): Promise<import("@/types/pokemon").PokemonLite> {
+  const generation = getGenerationFromId(pokemon.id)
 
   return {
     id: pokemon.id,
@@ -234,7 +296,7 @@ export async function convertToPokemonLite(pokemon: PokeAPIPokemon): Promise<imp
 // Batch fetch Pokemon with error handling
 export async function fetchPokemonBatch(
   ids: number[],
-  maxConcurrent = 10,
+  maxConcurrent = 20, // Increased from 10
 ): Promise<import("@/types/pokemon").PokemonLite[]> {
   const results: import("@/types/pokemon").PokemonLite[] = []
 
@@ -255,9 +317,8 @@ export async function fetchPokemonBatch(
     const batchResults = await Promise.all(promises)
     results.push(...(batchResults.filter((p) => p !== null) as import("@/types/pokemon").PokemonLite[]))
 
-    // Small delay between batches to be respectful to the API
     if (i + maxConcurrent < ids.length) {
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 50)) // Reduced from 100ms
     }
   }
 

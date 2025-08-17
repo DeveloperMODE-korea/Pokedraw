@@ -157,9 +157,20 @@
 }
 
 .pixel-title {
-  font-family: var(--font-pixel);
+  font-family: var(--font-pixel), var(--font-pixel-kr), monospace;
   color: var(--color-foreground);
   line-height: 1.625;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.pixel-title-kr {
+  font-family: var(--font-pixel-kr), monospace;
+  color: var(--color-foreground);
+  line-height: 1.625;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.1);
 }
 
 @layer base {

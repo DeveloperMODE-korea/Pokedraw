@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { Share2, Settings, RotateCcw, TrendingUp } from "lucide-react"
+import { Share2, Settings, RotateCcw, TrendingUp, Dices } from "lucide-react"
 import type { IVSet, StatKey } from "@/types/pokemon"
 
 const STAT_NAMES: Record<StatKey, string> = {
@@ -40,19 +40,23 @@ interface SlotReelProps {
   isRolling: boolean
   delay: number
   onComplete: () => void
+  onIndividualRoll: (stat: StatKey) => void
+  options: IVOptions
 }
 
-function SlotReel({ stat, finalValue, isRolling, delay, onComplete }: SlotReelProps) {
+function SlotReel({ stat, finalValue, isRolling, delay, onComplete, onIndividualRoll, options }: SlotReelProps) {
   const [currentValue, setCurrentValue] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
+  const [isIndividualRolling, setIsIndividualRolling] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
-    if (isRolling && !isAnimating) {
+    if ((isRolling || isIndividualRolling) && !isAnimating) {
       const startTime = Date.now()
       setIsAnimating(true)
 
-      // Start rolling animation after delay
+      // Start rolling animation after delay (only for group roll)
+      const actualDelay = isIndividualRolling ? 0 : delay
       setTimeout(() => {
         intervalRef.current = setInterval(() => {
           setCurrentValue(Math.floor(Math.random() * 32))
@@ -66,11 +70,15 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete }: SlotReelPr
             }
             setCurrentValue(finalValue)
             setIsAnimating(false)
-            onComplete()
+            if (isIndividualRolling) {
+              setIsIndividualRolling(false)
+            } else {
+              onComplete()
+            }
           },
           1600 + Math.random() * 400,
         ) // 1.6s - 2.0s
-      }, delay)
+      }, actualDelay)
     }
 
     return () => {
@@ -78,7 +86,13 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete }: SlotReelPr
         clearInterval(intervalRef.current)
       }
     }
-  }, [isRolling, finalValue, delay, onComplete, isAnimating])
+  }, [isRolling, isIndividualRolling, finalValue, delay, onComplete, isAnimating])
+
+  const handleIndividualRoll = () => {
+    if (isAnimating || isRolling) return
+    setIsIndividualRolling(true)
+    onIndividualRoll(stat)
+  }
 
   return (
     <div className="flex flex-col items-center space-y-2">
@@ -122,6 +136,15 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete }: SlotReelPr
           style={{ width: `${(currentValue / 31) * 100}%` }}
         />
       </div>
+      <Button
+        size="sm"
+        variant="outline"
+        className="pixel-button bg-transparent text-xs h-6 px-2"
+        onClick={handleIndividualRoll}
+        disabled={isAnimating || isRolling}
+      >
+        <Dices className="w-3 h-3" />
+      </Button>
     </div>
   )
 }
@@ -148,6 +171,11 @@ export function IVRoulette() {
     }
   }
 
+  const generateSingleIV = (): number => {
+    const { minValue, maxValue } = options
+    return Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue
+  }
+
   const rollIVs = () => {
     if (isRolling) return
 
@@ -157,6 +185,22 @@ export function IVRoulette() {
 
     const newIVs = generateIVs()
     setResult(newIVs)
+  }
+
+  const handleIndividualRoll = (stat: StatKey) => {
+    const newValue = generateSingleIV()
+    setResult((prev) =>
+      prev
+        ? { ...prev, [stat]: newValue }
+        : {
+            hp: stat === "hp" ? newValue : 0,
+            atk: stat === "atk" ? newValue : 0,
+            def: stat === "def" ? newValue : 0,
+            spa: stat === "spa" ? newValue : 0,
+            spd: stat === "spd" ? newValue : 0,
+            spe: stat === "spe" ? newValue : 0,
+          },
+    )
   }
 
   const handleReelComplete = () => {
@@ -199,14 +243,14 @@ export function IVRoulette() {
       {/* Header */}
       <div className="pixel-box p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="pixel-title text-2xl text-primary">IV Roulette</h2>
+          <h2 className="pixel-title text-2xl text-primary">개체값 룰렛</h2>
           <Button
             variant="outline"
             className="pixel-button bg-transparent"
             onClick={() => setShowOptions(!showOptions)}
           >
             <Settings className="w-4 h-4 mr-2" />
-            Options
+            옵션
           </Button>
         </div>
 
@@ -221,7 +265,7 @@ export function IVRoulette() {
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Minimum Value: {options.minValue}</Label>
+                  <Label>최소값: {options.minValue}</Label>
                   <Slider
                     value={[options.minValue]}
                     onValueChange={([value]) => setOptions((prev) => ({ ...prev, minValue: value }))}
@@ -232,7 +276,7 @@ export function IVRoulette() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Maximum Value: {options.maxValue}</Label>
+                  <Label>최대값: {options.maxValue}</Label>
                   <Slider
                     value={[options.maxValue]}
                     onValueChange={([value]) => setOptions((prev) => ({ ...prev, maxValue: value }))}
@@ -257,6 +301,8 @@ export function IVRoulette() {
               isRolling={isRolling}
               delay={index * 200} // Stagger the start times
               onComplete={handleReelComplete}
+              onIndividualRoll={handleIndividualRoll}
+              options={options}
             />
           ))}
         </div>
@@ -264,7 +310,7 @@ export function IVRoulette() {
         {/* Roll Button */}
         <div className="text-center">
           <Button onClick={rollIVs} disabled={isRolling} className="pixel-button text-lg px-8 py-3" size="lg">
-            {isRolling ? `Rolling... (${completedReels}/6)` : "Roll IVs!"}
+            {isRolling ? `돌리는 중... (${completedReels}/6)` : "전체 돌리기!"}
           </Button>
         </div>
       </div>
@@ -280,7 +326,7 @@ export function IVRoulette() {
           >
             <Card className="pixel-box">
               <CardHeader className="text-center">
-                <CardTitle className="pixel-title text-xl text-primary">IV Results</CardTitle>
+                <CardTitle className="pixel-title text-xl text-primary">개체값 결과</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Stats Summary */}
@@ -290,19 +336,19 @@ export function IVRoulette() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-primary">{stats.total}</div>
-                        <div className="text-xs text-muted-foreground">Total</div>
+                        <div className="text-xs text-muted-foreground">총합</div>
                       </div>
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-accent-foreground">{stats.perfectCount}</div>
-                        <div className="text-xs text-muted-foreground">Perfect IVs</div>
+                        <div className="text-xs text-muted-foreground">완벽한 개체값</div>
                       </div>
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-secondary">{stats.averagePercent}%</div>
-                        <div className="text-xs text-muted-foreground">Average</div>
+                        <div className="text-xs text-muted-foreground">평균</div>
                       </div>
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-foreground">{stats.grade}</div>
-                        <div className="text-xs text-muted-foreground">Grade</div>
+                        <div className="text-xs text-muted-foreground">등급</div>
                       </div>
                     </div>
                   )
@@ -310,7 +356,7 @@ export function IVRoulette() {
 
                 {/* Individual IVs */}
                 <div className="space-y-2">
-                  <h4 className="pixel-title text-sm text-center text-muted-foreground">Individual Values</h4>
+                  <h4 className="pixel-title text-sm text-center text-muted-foreground">개별 개체값</h4>
                   <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
                     {statKeys.map((stat) => (
                       <div key={stat} className="text-center">
@@ -331,15 +377,15 @@ export function IVRoulette() {
                 <div className="flex justify-center gap-4">
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={shareResult}>
                     <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                    공유
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent">
                     <TrendingUp className="w-4 h-4 mr-2" />
-                    Analyze
+                    분석
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={rollIVs}>
                     <RotateCcw className="w-4 h-4 mr-2" />
-                    Roll Again
+                    다시 돌리기
                   </Button>
                 </div>
               </CardContent>
