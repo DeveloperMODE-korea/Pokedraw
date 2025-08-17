@@ -291,6 +291,10 @@ export function PokemonGacha() {
     return filter ? filter.types : []
   }
 
+  const isGenerationTypeActive = (gen: number, type: string): boolean => {
+    return getGenerationTypes(gen).includes(type)
+  }
+
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
       {/* Header */}
@@ -378,10 +382,13 @@ export function PokemonGacha() {
                             key={type}
                             variant="outline"
                             size="sm"
+                            disabled={!filters.gens.includes(gen)}
                             className={`pixel-button text-xs ${
-                              getGenerationTypes(gen).includes(type)
+                              isGenerationTypeActive(gen, type)
                                 ? `${TYPE_COLORS[type]} text-white`
-                                : "bg-transparent border-muted-foreground"
+                                : filters.gens.includes(gen)
+                                ? "bg-transparent border-muted-foreground"
+                                : "bg-muted text-muted-foreground opacity-50"
                             }`}
                             onClick={() => toggleGenerationType(gen, type)}
                           >
