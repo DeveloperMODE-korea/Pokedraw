@@ -352,7 +352,9 @@ export function PokemonGacha() {
                       variant="outline"
                       size="sm"
                       className={`pixel-button ${
-                        filters.gens.includes(gen) ? "bg-primary text-primary-foreground" : "bg-transparent"
+                        filters.gens.includes(gen) 
+                          ? "bg-primary text-primary-foreground border-primary" 
+                          : "bg-transparent border-muted-foreground hover:bg-muted"
                       }`}
                       onClick={() => toggleGeneration(gen)}
                     >
@@ -367,9 +369,11 @@ export function PokemonGacha() {
                 <Label className="pixel-title text-sm">세대별 타입 필터</Label>
                 <div className="space-y-3">
                   {[1, 2, 3, 4, 5].map((gen) => (
-                    <div key={gen} className="pixel-box p-3 space-y-2">
+                    <div key={gen} className={`pixel-box p-3 space-y-2 ${!filters.gens.includes(gen) ? 'opacity-50' : ''}`}>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{gen}세대</span>
+                        <span className={`text-sm font-medium ${!filters.gens.includes(gen) ? 'text-muted-foreground' : 'text-foreground'}`}>
+                          {gen}세대
+                        </span>
                         {getGenerationTypes(gen).length > 0 && (
                           <Badge variant="outline" className="text-xs">
                             {getGenerationTypes(gen).map(type => TYPE_TRANSLATIONS[type] || type).join(', ')}
@@ -387,8 +391,8 @@ export function PokemonGacha() {
                               isGenerationTypeActive(gen, type)
                                 ? `${TYPE_COLORS[type]} text-white`
                                 : filters.gens.includes(gen)
-                                ? "bg-transparent border-muted-foreground"
-                                : "bg-muted text-muted-foreground opacity-50"
+                                ? "bg-transparent border-muted-foreground hover:bg-muted"
+                                : "bg-muted text-muted-foreground border-muted cursor-not-allowed"
                             }`}
                             onClick={() => toggleGenerationType(gen, type)}
                           >
