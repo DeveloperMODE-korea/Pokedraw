@@ -344,7 +344,7 @@ export function IVRoulette() {
                       </div>
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-secondary">{stats.averagePercent}%</div>
-                        <div className="text-xs text-muted-foreground">평균</div>
+                        <div className="text-xs text-foreground">평균</div>
                       </div>
                       <div className="pixel-box p-3">
                         <div className="text-2xl font-bold text-foreground">{stats.grade}</div>
