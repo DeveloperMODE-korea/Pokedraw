@@ -57,9 +57,6 @@ export default function HomePage() {
               <CardTitle className="pixel-title text-lg text-primary">성격 룰렛</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                룰렛을 돌려서 스탯 보정이 있는 랜덤 포켓몬 성격을 얻어보세요!
-              </p>
               <Link href="/nature">
                 <Button className="pixel-button w-full">성격 뽑기</Button>
               </Link>
@@ -75,7 +72,6 @@ export default function HomePage() {
               <CardTitle className="pixel-title text-lg text-secondary">개체값 룰렛</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">슬롯머신 애니메이션과 함께 랜덤 개체값을 생성해보세요!</p>
               <Link href="/iv">
                 <Button className="pixel-button w-full bg-secondary text-secondary-foreground">개체값 뽑기</Button>
               </Link>
@@ -91,7 +87,6 @@ export default function HomePage() {
               <CardTitle className="pixel-title text-lg text-accent-foreground">포켓몬 가챠</CardTitle>
             </CardHeader>
             <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">세대, 타입, 스탯 필터로 랜덤 포켓몬을 뽑아보세요!</p>
               <Link href="/gacha">
                 <Button className="pixel-button w-full bg-accent text-accent-foreground">포켓몬 뽑기</Button>
               </Link>
