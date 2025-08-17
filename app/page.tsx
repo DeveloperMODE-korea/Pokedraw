@@ -35,9 +35,6 @@ export default function HomePage() {
                 가챠
               </Button>
             </Link>
-            <Button variant="outline" className="pixel-button bg-transparent">
-              포켓몬 도감
-            </Button>
           </div>
         </div>
       </nav>
@@ -100,14 +97,6 @@ export default function HomePage() {
               </Link>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Recent Results Section */}
-        <div className="pixel-box p-6">
-          <h3 className="pixel-title text-lg mb-4 text-primary">최근 결과</h3>
-          <div className="text-center text-muted-foreground">
-            <p>아직 최근 결과가 없습니다. 위의 기능들을 시도해보세요!</p>
-          </div>
         </div>
       </main>
 

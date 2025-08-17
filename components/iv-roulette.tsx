@@ -229,13 +229,6 @@ export function IVRoulette() {
     return { total, perfectCount, averagePercent, grade }
   }
 
-  const shareResult = () => {
-    if (!result) return
-    const stats = calculateStats(result)
-    const text = `My IV Roll: ${stats.total}/186 (${stats.perfectCount} perfect IVs, Grade: ${stats.grade}) - Pokedraw`
-    navigator.clipboard.writeText(text)
-  }
-
   const statKeys: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"]
 
   return (
@@ -375,14 +368,6 @@ export function IVRoulette() {
 
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4">
-                  <Button variant="outline" className="pixel-button bg-transparent" onClick={shareResult}>
-                    <Share2 className="w-4 h-4 mr-2" />
-                    공유
-                  </Button>
-                  <Button variant="outline" className="pixel-button bg-transparent">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    분석
-                  </Button>
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={rollIVs}>
                     <RotateCcw className="w-4 h-4 mr-2" />
                     다시 돌리기

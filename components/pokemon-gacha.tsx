@@ -317,10 +317,10 @@ export function PokemonGacha() {
                       key={gen}
                       variant="outline"
                       size="sm"
-                      className={`pixel-button ${
-                        filters.gens.includes(gen) 
-                          ? "bg-primary text-primary-foreground border-primary" 
-                          : "bg-transparent border-muted-foreground hover:bg-muted"
+                      className={`pixel-button transition-opacity ${
+                        filters.gens.includes(gen)
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-transparent border-muted-foreground opacity-50 hover:opacity-100"
                       }`}
                       onClick={() => toggleGeneration(gen)}
                     >
@@ -339,10 +339,10 @@ export function PokemonGacha() {
                       key={type}
                       variant="outline"
                       size="sm"
-                      className={`pixel-button text-xs ${
+                      className={`pixel-button text-xs transition-opacity ${
                         filters.types.includes(type)
                           ? `${TYPE_COLORS[type]} text-white`
-                          : "bg-transparent border-muted-foreground"
+                          : "bg-transparent border-muted-foreground opacity-50 hover:opacity-100"
                       }`}
                       onClick={() => toggleType(type)}
                     >
