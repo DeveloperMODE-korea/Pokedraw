@@ -50,6 +50,10 @@ export interface PokeAPISpecies {
   generation: {
     name: string
   }
+  names?: Array<{
+    name: string
+    language: { name: string }
+  }>
 }
 
 export interface PokeAPIGeneration {
@@ -327,10 +331,21 @@ function getGenerationFromId(id: number): number {
 
 export async function convertToPokemonLite(pokemon: PokeAPIPokemon): Promise<import("@/types/pokemon").PokemonLite> {
   const generation = getGenerationFromId(pokemon.id)
+  let displayName = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)
+  try {
+    // Try to localize Pokemon name to Korean via species.names
+    const match = pokemon.species.url.match(/\/pokemon-species\/(\d+)\//)
+    const speciesId = match ? Number.parseInt(match[1]) : pokemon.id
+    const species = await fetchPokemonSpecies(speciesId)
+    const ko = species.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
+    if (ko) displayName = ko
+  } catch (e) {
+    // ignore localization failure; fallback to english name
+  }
 
   return {
     id: pokemon.id,
-    name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1),
+    name: displayName,
     types: pokemon.types.map((t) => t.type.name),
     bst: calculateBST(pokemon.stats),
     spriteUrl: getPokemonSpriteUrl(pokemon.sprites),

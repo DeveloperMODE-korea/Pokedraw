@@ -107,10 +107,10 @@ function PokemonCard({ pokemon, onClick, delay }: PokemonCardProps) {
             ))}
           </div>
 
-          {/* BST */}
+          {/* 종족값 */}
           <div className="text-center">
             <div className="pixel-box p-2 bg-muted">
-              <div className="text-sm font-bold text-foreground">BST: {pokemon.bst}</div>
+              <div className="text-sm font-bold text-foreground">종족값: {pokemon.bst}</div>
               <div className="w-full bg-background rounded-full h-2 mt-1">
                 <div
                   className="bg-primary h-2 rounded-full transition-all duration-300"
