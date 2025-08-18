@@ -20,6 +20,7 @@ import {
   getMoveNameKo,
   getEncounterAreasKo,
   getEvolutionChainKoByPokemon,
+  getEvolutionChainIdsByPokemon,
 } from "@/services/pokeapi"
 
 const POKEMON_TYPES = [
@@ -222,7 +223,7 @@ export function PokemonGacha() {
 
   const { pokemon: availablePokemon, loading: dataLoading, error: dataError, refetch } = usePokemonData(filters)
 
-  const drawPokemon = () => {
+  const drawPokemon = async () => {
     if (isDrawing || dataLoading || availablePokemon.length === 0) return
 
     setIsDrawing(true)
@@ -231,6 +232,7 @@ export function PokemonGacha() {
     // Draw Pokemon from available data
     const drawn: PokemonLite[] = []
     const usedIds = new Set<number>()
+    const usedEvolutionIds = new Set<number>()
 
     for (let i = 0; i < filters.count; i++) {
       let attempts = 0
@@ -239,11 +241,22 @@ export function PokemonGacha() {
       do {
         pokemon = availablePokemon[Math.floor(Math.random() * availablePokemon.length)]
         attempts++
-      } while (!filters.allowDup && usedIds.has(pokemon.id) && attempts < 50)
+      } while (
+        !filters.allowDup &&
+        (usedIds.has(pokemon.id) || usedEvolutionIds.has(pokemon.id)) &&
+        attempts < 80
+      )
 
-      if (filters.allowDup || !usedIds.has(pokemon.id)) {
+      if (filters.allowDup || (!usedIds.has(pokemon.id) && !usedEvolutionIds.has(pokemon.id))) {
         drawn.push(pokemon)
         usedIds.add(pokemon.id)
+        if (!filters.allowDup) {
+          // 마찬가지 체인에 속한 모든 species id를 제외 집합에 추가
+          try {
+            const evoIds = await getEvolutionChainIdsByPokemon(pokemon.id)
+            evoIds.forEach((id) => usedEvolutionIds.add(id))
+          } catch {}
+        }
       }
     }
 

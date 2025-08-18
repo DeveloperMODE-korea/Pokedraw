@@ -627,6 +627,26 @@ export async function getEvolutionChainKoByPokemon(idOrName: number | string): P
   }
 }
 
+export async function getEvolutionChainIdsByPokemon(idOrName: number | string): Promise<number[]> {
+  try {
+    const species = await fetchPokemonSpecies(idOrName)
+    const chainUrl = (species as any).evolution_chain?.url as string | undefined
+    if (!chainUrl) return []
+    const chain = await fetchEvolutionChainByUrl(chainUrl)
+    const urls = flattenEvolutionChain(chain.chain, [])
+    const ids = urls
+      .map((u) => {
+        const m = u.match(/\/pokemon-species\/(\d+)\//)
+        return m ? Number.parseInt(m[1]) : 0
+      })
+      .filter((n) => n > 0)
+    return Array.from(new Set(ids)).sort((a, b) => a - b)
+  } catch (e) {
+    console.error("getEvolutionChainIdsByPokemon failed", e)
+    return []
+  }
+}
+
 // Batch fetch Pokemon with error handling
 export async function fetchPokemonBatch(
   ids: number[],
