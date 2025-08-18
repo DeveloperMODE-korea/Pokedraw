@@ -202,6 +202,7 @@ export function PokemonGacha() {
   const [movesMap, setMovesMap] = useState<Record<number, string[]>>({})
   const [rollingAllAbilities, setRollingAllAbilities] = useState(false)
   const [rollingAllMoves, setRollingAllMoves] = useState(false)
+  const [includeHiddenAbility, setIncludeHiddenAbility] = useState(false)
   const [filters, setFilters] = useState<GachaFilter>({
     gens: [1, 2, 3, 4, 5],
     types: [],
@@ -289,7 +290,9 @@ export function PokemonGacha() {
     setRollingAllAbilities(true)
     try {
       const entries = await Promise.all(
-        savedTeam.map(async (p) => [p.id, await getRandomAbilityForPokemon(p.id)] as const),
+        savedTeam.map(
+          async (p) => [p.id, await getRandomAbilityForPokemon(p.id, { includeHidden: includeHiddenAbility })] as const,
+        ),
       )
       const next: Record<number, string | null> = {}
       for (const [id, ability] of entries) next[id] = ability ?? null
@@ -538,6 +541,16 @@ export function PokemonGacha() {
             <CardTitle className="pixel-title text-xl text-primary">팀 특성/기술 가챠</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <Checkbox
+                id="includeHiddenAbility"
+                checked={includeHiddenAbility}
+                onCheckedChange={(checked) => setIncludeHiddenAbility(!!checked)}
+              />
+              <Label htmlFor="includeHiddenAbility" className="text-sm">
+                숨겨진 특성 포함
+              </Label>
+            </div>
             <div className="flex justify-center gap-3">
               <Button
                 variant="outline"
@@ -574,7 +587,7 @@ export function PokemonGacha() {
                         size="sm"
                         variant="outline"
                         className="pixel-button bg-transparent"
-                        onClick={() => rollAbility(p)}
+                        onClick={() => rollAbility(p, includeHiddenAbility)}
                       >
                         <Sparkles className="w-3 h-3 mr-1" />가챠
                       </Button>
