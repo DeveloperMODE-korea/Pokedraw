@@ -29,6 +29,13 @@ export interface PokeAPIPokemon {
   name: string
   sprites: PokeAPISprites
   stats: PokeAPIStat[]
+  abilities?: Array<{
+    is_hidden?: boolean
+    ability: { name: string; url: string }
+  }>
+  moves?: Array<{
+    move: { name: string; url: string }
+  }>
   types: Array<{
     type: {
       name: string
@@ -299,6 +306,48 @@ export async function convertToPokemonLite(pokemon: PokeAPIPokemon): Promise<imp
     bst: calculateBST(pokemon.stats),
     spriteUrl: getPokemonSpriteUrl(pokemon.sprites),
     generation,
+  }
+}
+
+// --- Ability & Moves helpers ---
+export async function getRandomAbilityForPokemon(
+  idOrName: number | string,
+  options?: { includeHidden?: boolean },
+): Promise<string | null> {
+  try {
+    const data = await fetchPokemon(idOrName)
+    const abilities = (data.abilities || []).filter((a) => (options?.includeHidden ? true : !a.is_hidden))
+    if (abilities.length === 0) return null
+    const pick = abilities[Math.floor(Math.random() * abilities.length)]
+    return pick.ability.name
+  } catch (e) {
+    console.error("getRandomAbilityForPokemon failed", e)
+    return null
+  }
+}
+
+export async function getRandomMovesForPokemon(
+  idOrName: number | string,
+  count = 4,
+): Promise<string[]> {
+  try {
+    const data = await fetchPokemon(idOrName)
+    const moves = (data.moves || []).map((m) => m.move.name)
+    if (moves.length === 0) return []
+    const unique = Array.from(new Set(moves))
+    const picked: string[] = []
+    const used = new Set<number>()
+    const max = Math.min(count, unique.length)
+    while (picked.length < max && used.size < unique.length) {
+      const idx = Math.floor(Math.random() * unique.length)
+      if (used.has(idx)) continue
+      used.add(idx)
+      picked.push(unique[idx])
+    }
+    return picked
+  } catch (e) {
+    console.error("getRandomMovesForPokemon failed", e)
+    return []
   }
 }
 

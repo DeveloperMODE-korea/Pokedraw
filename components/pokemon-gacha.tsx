@@ -13,6 +13,7 @@ import { Gift, Settings, RotateCcw, Info, Sparkles, AlertCircle, RefreshCw } fro
 import { TYPE_COLORS } from "@/data/mock-pokemon"
 import { usePokemonData } from "@/hooks/use-pokemon-data"
 import type { PokemonLite, GachaFilter } from "@/types/pokemon"
+import { getRandomAbilityForPokemon, getRandomMovesForPokemon } from "@/services/pokeapi"
 
 const POKEMON_TYPES = [
   "normal",
@@ -196,6 +197,11 @@ export function PokemonGacha() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedPokemon, setSelectedPokemon] = useState<PokemonLite | null>(null)
+  const [savedTeam, setSavedTeam] = useState<PokemonLite[] | null>(null)
+  const [abilityMap, setAbilityMap] = useState<Record<number, string | null>>({})
+  const [movesMap, setMovesMap] = useState<Record<number, string[]>>({})
+  const [rollingAllAbilities, setRollingAllAbilities] = useState(false)
+  const [rollingAllMoves, setRollingAllMoves] = useState(false)
   const [filters, setFilters] = useState<GachaFilter>({
     gens: [1, 2, 3, 4, 5],
     types: [],
@@ -259,6 +265,53 @@ export function PokemonGacha() {
         types: newTypes,
       }
     })
+  }
+
+  const saveTeam = () => {
+    if (results.length !== 6) return
+    setSavedTeam(results)
+    setAbilityMap({})
+    setMovesMap({})
+  }
+
+  const rollAbility = async (pokemon: PokemonLite, includeHidden = false) => {
+    const ability = await getRandomAbilityForPokemon(pokemon.id, { includeHidden })
+    setAbilityMap((prev) => ({ ...prev, [pokemon.id]: ability }))
+  }
+
+  const rollMoves = async (pokemon: PokemonLite, count = 4) => {
+    const moves = await getRandomMovesForPokemon(pokemon.id, count)
+    setMovesMap((prev) => ({ ...prev, [pokemon.id]: moves }))
+  }
+
+  const rollAllTeamAbilities = async () => {
+    if (!savedTeam) return
+    setRollingAllAbilities(true)
+    try {
+      const entries = await Promise.all(
+        savedTeam.map(async (p) => [p.id, await getRandomAbilityForPokemon(p.id)] as const),
+      )
+      const next: Record<number, string | null> = {}
+      for (const [id, ability] of entries) next[id] = ability ?? null
+      setAbilityMap(next)
+    } finally {
+      setRollingAllAbilities(false)
+    }
+  }
+
+  const rollAllTeamMoves = async () => {
+    if (!savedTeam) return
+    setRollingAllMoves(true)
+    try {
+      const entries = await Promise.all(
+        savedTeam.map(async (p) => [p.id, await getRandomMovesForPokemon(p.id, 4)] as const),
+      )
+      const next: Record<number, string[]> = {}
+      for (const [id, moves] of entries) next[id] = moves
+      setMovesMap(next)
+    } finally {
+      setRollingAllMoves(false)
+    }
   }
 
   return (
@@ -458,7 +511,13 @@ export function PokemonGacha() {
 
                 {/* Action Buttons */}
                 <div className="flex justify-center gap-4 mt-6">
-                  <Button variant="outline" className="pixel-button bg-transparent">
+                  <Button
+                    variant="outline"
+                    className="pixel-button bg-transparent"
+                    disabled={results.length !== 6}
+                    onClick={saveTeam}
+                    title={results.length !== 6 ? "정확히 6마리일 때만 저장가능" : "팀 저장"}
+                  >
                     <Info className="w-4 h-4 mr-2" />팀 저장
                   </Button>
                   <Button variant="outline" className="pixel-button bg-transparent" onClick={drawPokemon}>
@@ -471,6 +530,88 @@ export function PokemonGacha() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Saved Team Ability/Moves Gacha */}
+      {savedTeam && (
+        <Card className="pixel-box">
+          <CardHeader className="text-center">
+            <CardTitle className="pixel-title text-xl text-primary">팀 특성/기술 가챠</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="outline"
+                className="pixel-button bg-transparent"
+                onClick={rollAllTeamAbilities}
+                disabled={rollingAllAbilities}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />전체 특성 가챠
+              </Button>
+              <Button
+                variant="outline"
+                className="pixel-button bg-transparent"
+                onClick={rollAllTeamMoves}
+                disabled={rollingAllMoves}
+              >
+                <Sparkles className="w-4 h-4 mr-2" />전체 기술 가챠
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {savedTeam.map((p) => (
+                <div key={p.id} className="pixel-box p-3 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <img src={p.spriteUrl} alt={p.name} className="w-10 h-10 pixelated" />
+                    <div>
+                      <div className="font-bold text-foreground">{p.name}</div>
+                      <div className="text-xs text-muted-foreground">#{p.id.toString().padStart(3, "0")}</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">특성</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="pixel-button bg-transparent"
+                        onClick={() => rollAbility(p)}
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />가챠
+                      </Button>
+                    </div>
+                    <div className="text-sm font-medium">
+                      {abilityMap[p.id] ?? <span className="text-muted-foreground">아직 없음</span>}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">기술 (4)</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="pixel-button bg-transparent"
+                        onClick={() => rollMoves(p)}
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />가챠
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {(movesMap[p.id] ?? []).map((m) => (
+                        <Badge key={m} variant="outline" className="text-xs">
+                          {m}
+                        </Badge>
+                      ))}
+                      {(movesMap[p.id] ?? []).length === 0 && (
+                        <span className="text-sm text-muted-foreground">아직 없음</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Pokemon Detail Modal */}
       <PokemonModal pokemon={selectedPokemon} isOpen={!!selectedPokemon} onClose={() => setSelectedPokemon(null)} />
