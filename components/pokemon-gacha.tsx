@@ -535,7 +535,11 @@ export function PokemonGacha() {
                         key={opt.k}
                         variant="outline"
                         size="sm"
-                        className={`pixel-button ${filters.evolutionMode === opt.k ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
+                        className={`pixel-button transition-opacity ${
+                          filters.evolutionMode === opt.k
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent border-muted-foreground opacity-50 hover:opacity-100"
+                        }`}
                         onClick={() => setFilters((prev) => ({ ...prev, evolutionMode: opt.k }))}
                       >
                         {opt.l}
