@@ -13,7 +13,12 @@ import { Gift, Settings, RotateCcw, Info, Sparkles, AlertCircle, RefreshCw } fro
 import { TYPE_COLORS } from "@/data/mock-pokemon"
 import { usePokemonData } from "@/hooks/use-pokemon-data"
 import type { PokemonLite, GachaFilter } from "@/types/pokemon"
-import { getRandomAbilityForPokemon, getRandomMovesForPokemon } from "@/services/pokeapi"
+import {
+  getRandomAbilityForPokemon,
+  getRandomMovesForPokemon,
+  getAbilityNameKo,
+  getMoveNameKo,
+} from "@/services/pokeapi"
 
 const POKEMON_TYPES = [
   "normal",
@@ -276,13 +281,15 @@ export function PokemonGacha() {
   }
 
   const rollAbility = async (pokemon: PokemonLite, includeHidden = false) => {
-    const ability = await getRandomAbilityForPokemon(pokemon.id, { includeHidden })
-    setAbilityMap((prev) => ({ ...prev, [pokemon.id]: ability }))
+    const abilitySlug = await getRandomAbilityForPokemon(pokemon.id, { includeHidden })
+    const ko = abilitySlug ? await getAbilityNameKo(abilitySlug) : null
+    setAbilityMap((prev) => ({ ...prev, [pokemon.id]: ko }))
   }
 
   const rollMoves = async (pokemon: PokemonLite, count = 4) => {
-    const moves = await getRandomMovesForPokemon(pokemon.id, count)
-    setMovesMap((prev) => ({ ...prev, [pokemon.id]: moves }))
+    const moveSlugs = await getRandomMovesForPokemon(pokemon.id, count)
+    const koMoves = await Promise.all(moveSlugs.map((m) => getMoveNameKo(m)))
+    setMovesMap((prev) => ({ ...prev, [pokemon.id]: koMoves }))
   }
 
   const rollAllTeamAbilities = async () => {
@@ -290,9 +297,11 @@ export function PokemonGacha() {
     setRollingAllAbilities(true)
     try {
       const entries = await Promise.all(
-        savedTeam.map(
-          async (p) => [p.id, await getRandomAbilityForPokemon(p.id, { includeHidden: includeHiddenAbility })] as const,
-        ),
+        savedTeam.map(async (p) => {
+          const slug = await getRandomAbilityForPokemon(p.id, { includeHidden: includeHiddenAbility })
+          const ko = slug ? await getAbilityNameKo(slug) : null
+          return [p.id, ko] as const
+        }),
       )
       const next: Record<number, string | null> = {}
       for (const [id, ability] of entries) next[id] = ability ?? null
@@ -307,7 +316,11 @@ export function PokemonGacha() {
     setRollingAllMoves(true)
     try {
       const entries = await Promise.all(
-        savedTeam.map(async (p) => [p.id, await getRandomMovesForPokemon(p.id, 4)] as const),
+        savedTeam.map(async (p) => {
+          const slugs = await getRandomMovesForPokemon(p.id, 4)
+          const kos = await Promise.all(slugs.map((m) => getMoveNameKo(m)))
+          return [p.id, kos] as const
+        }),
       )
       const next: Record<number, string[]> = {}
       for (const [id, moves] of entries) next[id] = moves

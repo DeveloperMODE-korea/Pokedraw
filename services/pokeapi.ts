@@ -68,6 +68,25 @@ export interface PokeAPIType {
   }>
 }
 
+// Localized name entry
+interface PokeAPINameEntry {
+  name: string
+  language: { name: string }
+}
+
+// Ability / Move resources for localization
+interface PokeAPIAbilityResource {
+  id: number
+  name: string
+  names?: PokeAPINameEntry[]
+}
+
+interface PokeAPIMoveResource {
+  id: number
+  name: string
+  names?: PokeAPINameEntry[]
+}
+
 const POKEAPI_BASE = "https://pokeapi.co/api/v2"
 
 // Cache for API responses
@@ -223,6 +242,16 @@ export async function fetchType(name: string): Promise<PokeAPIType> {
   return fetchWithCache<PokeAPIType>(url)
 }
 
+async function fetchAbilityResource(idOrName: string | number): Promise<PokeAPIAbilityResource> {
+  const url = `${POKEAPI_BASE}/ability/${idOrName}`
+  return fetchWithCache<PokeAPIAbilityResource>(url)
+}
+
+async function fetchMoveResource(idOrName: string | number): Promise<PokeAPIMoveResource> {
+  const url = `${POKEAPI_BASE}/move/${idOrName}`
+  return fetchWithCache<PokeAPIMoveResource>(url)
+}
+
 // Get Pokemon IDs from generation
 const GENERATION_RANGES: Record<number, [number, number]> = {
   1: [1, 151],
@@ -348,6 +377,43 @@ export async function getRandomMovesForPokemon(
   } catch (e) {
     console.error("getRandomMovesForPokemon failed", e)
     return []
+  }
+}
+
+// --- Localization helpers ---
+const abilityKoCache = new Map<string | number, string>()
+const moveKoCache = new Map<string | number, string>()
+
+function koFallbackFromSlug(slug: string): string {
+  // Fallback: prettify english slug if ko not found
+  return slug.replace(/-/g, " ")
+}
+
+export async function getAbilityNameKo(idOrName: string | number): Promise<string> {
+  if (abilityKoCache.has(idOrName)) return abilityKoCache.get(idOrName) as string
+  try {
+    const res = await fetchAbilityResource(idOrName)
+    const ko = res.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
+    const name = ko || koFallbackFromSlug(res.name)
+    abilityKoCache.set(idOrName, name)
+    return name
+  } catch (e) {
+    console.error("getAbilityNameKo failed", e)
+    return typeof idOrName === "string" ? koFallbackFromSlug(idOrName) : String(idOrName)
+  }
+}
+
+export async function getMoveNameKo(idOrName: string | number): Promise<string> {
+  if (moveKoCache.has(idOrName)) return moveKoCache.get(idOrName) as string
+  try {
+    const res = await fetchMoveResource(idOrName)
+    const ko = res.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
+    const name = ko || koFallbackFromSlug(res.name)
+    moveKoCache.set(idOrName, name)
+    return name
+  } catch (e) {
+    console.error("getMoveNameKo failed", e)
+    return typeof idOrName === "string" ? koFallbackFromSlug(idOrName) : String(idOrName)
   }
 }
 
