@@ -468,6 +468,78 @@ export async function getMoveNameKo(idOrName: string | number): Promise<string> 
 // --- Encounters (Korean where available) ---
 const locationAreaKoCache = new Map<string, string>()
 
+const REGION_KO: Record<string, string> = {
+  kanto: "관동",
+  johto: "성도",
+  hoenn: "호연",
+  sinnoh: "신오",
+  unova: "하나",
+  kalos: "칼로스",
+  alola: "알로라",
+  galar: "가라르",
+  paldea: "팔데아",
+}
+
+function toTitleCase(input: string): string {
+  return input
+    .split(/\s+/)
+    .map((w) => (w.length ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(" ")
+}
+
+function translateLocationAreaSlugToKo(slug: string): string {
+  const name = slug.replace(/-/g, " ")
+
+  // Region + Route pattern: e.g., "sinnoh route 202 area"
+  const routeMatch = name.match(/^(kanto|johto|hoenn|sinnoh|unova|kalos|alola|galar|paldea)\s+route\s+(\d+)/)
+  if (routeMatch) {
+    const region = REGION_KO[routeMatch[1]] || toTitleCase(routeMatch[1])
+    const no = routeMatch[2]
+    return `${region} ${no}번 도로`
+  }
+
+  // City/Town pattern: e.g., "castelia city area"
+  const cityMatch = name.match(/^(.*)\s+city\s+area$/)
+  if (cityMatch) {
+    return `${toTitleCase(cityMatch[1])} 시티`
+  }
+  const townMatch = name.match(/^(.*)\s+town\s+area$/)
+  if (townMatch) {
+    return `${toTitleCase(townMatch[1])} 타운`
+  }
+
+  // Generic keyword replacements
+  const map: Record<string, string> = {
+    forest: "숲",
+    cave: "동굴",
+    mountain: "산",
+    mt: "산",
+    lake: "호수",
+    meadow: "초원",
+    valley: "계곡",
+    bridge: "다리",
+    port: "항구",
+    harbor: "항구",
+    gate: "게이트",
+    ruins: "유적",
+    desert: "사막",
+    park: "공원",
+    swamp: "습지",
+    marsh: "습지",
+    area: "",
+    route: "도로",
+  }
+
+  const words = name.split(/\s+/).map((w) => map[w] ?? w)
+  // If includes a standalone number and 'route', format as 번 도로
+  const idxRoute = words.indexOf("도로")
+  if (idxRoute > 0 && /^(\d+)$/.test(words[idxRoute - 1])) {
+    const num = words[idxRoute - 1]
+    words.splice(idxRoute - 1, 2, `${num}번 도로`)
+  }
+  return words.filter(Boolean).join(" ")
+}
+
 export async function getEncounterAreasKo(
   idOrName: number | string,
   limit = 5,
@@ -490,11 +562,11 @@ export async function getEncounterAreasKo(
         try {
           const res = await fetchLocationAreaByUrl(a.url)
           const ko = res.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
-          const pretty = ko || a.name.replace(/-/g, " ")
+          const pretty = ko || translateLocationAreaSlugToKo(a.name)
           locationAreaKoCache.set(a.url, pretty)
           return pretty
         } catch {
-          return a.name.replace(/-/g, " ")
+          return translateLocationAreaSlugToKo(a.name)
         }
       }),
     )
