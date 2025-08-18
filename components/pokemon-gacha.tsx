@@ -315,7 +315,7 @@ export function PokemonGacha() {
   }
 
   const saveTeam = () => {
-    if (results.length !== 6) return
+    if (results.length === 0) return
     setSavedTeam(results)
     setAbilityMap({})
     setMovesMap({})
@@ -623,9 +623,9 @@ export function PokemonGacha() {
                   <Button
                     variant="outline"
                     className="pixel-button bg-transparent"
-                    disabled={results.length !== 6}
+                    disabled={results.length === 0}
                     onClick={saveTeam}
-                    title={results.length !== 6 ? "정확히 6마리일 때만 저장가능" : "팀 저장"}
+                    title={results.length === 0 ? "뽑기 결과가 있을 때 저장할 수 있습니다" : "팀 저장"}
                   >
                     <Info className="w-4 h-4 mr-2" />팀 저장
                   </Button>
