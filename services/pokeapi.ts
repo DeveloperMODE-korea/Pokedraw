@@ -647,6 +647,35 @@ export async function getEvolutionChainIdsByPokemon(idOrName: number | string): 
   }
 }
 
+export async function getEvolutionStageInfoByPokemon(
+  idOrName: number | string,
+): Promise<{ chainIds: number[]; baseId: number; finalIds: number[] }> {
+  const species = await fetchPokemonSpecies(idOrName)
+  const chainUrl = (species as any).evolution_chain?.url as string | undefined
+  if (!chainUrl) return { chainIds: [], baseId: typeof idOrName === "number" ? idOrName : 0, finalIds: [] }
+  const chain = await fetchEvolutionChainByUrl(chainUrl)
+
+  // collect all species urls and final leaves
+  const chainIds: number[] = []
+  const finalIds: number[] = []
+
+  function walk(node: PokeAPIEvolutionChainNode) {
+    const m = node.species.url.match(/\/pokemon-species\/(\d+)\//)
+    const sid = m ? Number.parseInt(m[1]) : 0
+    if (sid) chainIds.push(sid)
+    if (!node.evolves_to || node.evolves_to.length === 0) {
+      if (sid) finalIds.push(sid)
+      return
+    }
+    for (const child of node.evolves_to) walk(child)
+  }
+
+  walk(chain.chain)
+  const mBase = chain.chain.species.url.match(/\/pokemon-species\/(\d+)\//)
+  const baseId = mBase ? Number.parseInt(mBase[1]) : 0
+  return { chainIds: Array.from(new Set(chainIds)).sort((a, b) => a - b), baseId, finalIds: Array.from(new Set(finalIds)).sort((a, b) => a - b) }
+}
+
 // Batch fetch Pokemon with error handling
 export async function fetchPokemonBatch(
   ids: number[],

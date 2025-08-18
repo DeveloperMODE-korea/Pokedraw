@@ -39,6 +39,8 @@ export interface GachaFilter {
   bst: [number, number]
   count: number
   allowDup: boolean
+  allowEvolutionDup?: boolean
+  evolutionMode?: "any" | "base" | "final"
 }
 
 export interface PokemonStats {

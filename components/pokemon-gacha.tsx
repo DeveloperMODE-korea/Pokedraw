@@ -21,6 +21,7 @@ import {
   getEncounterAreasKo,
   getEvolutionChainKoByPokemon,
   getEvolutionChainIdsByPokemon,
+  getEvolutionStageInfoByPokemon,
 } from "@/services/pokeapi"
 
 const POKEMON_TYPES = [
@@ -219,6 +220,8 @@ export function PokemonGacha() {
     bst: [200, 720],
     count: 6,
     allowDup: false,
+    allowEvolutionDup: false,
+    evolutionMode: "any",
   })
 
   const { pokemon: availablePokemon, loading: dataLoading, error: dataError, refetch } = usePokemonData(filters)
@@ -247,15 +250,35 @@ export function PokemonGacha() {
         attempts < 80
       )
 
-      if (filters.allowDup || (!usedIds.has(pokemon.id) && !usedEvolutionIds.has(pokemon.id))) {
-        drawn.push(pokemon)
-        usedIds.add(pokemon.id)
-        if (!filters.allowDup) {
-          // 마찬가지 체인에 속한 모든 species id를 제외 집합에 추가
-          try {
-            const evoIds = await getEvolutionChainIdsByPokemon(pokemon.id)
-            evoIds.forEach((id) => usedEvolutionIds.add(id))
-          } catch {}
+      const acceptCandidate = async (): Promise<boolean> => {
+        if (filters.evolutionMode === "any") return true
+        try {
+          const info = await getEvolutionStageInfoByPokemon(pokemon.id)
+          if (filters.evolutionMode === "base") {
+            return info.baseId === pokemon.id
+          }
+          if (filters.evolutionMode === "final") {
+            return info.finalIds.includes(pokemon.id)
+          }
+          return true
+        } catch {
+          return true
+        }
+      }
+
+      if (
+        filters.allowDup ||
+        (!usedIds.has(pokemon.id) && (!usedEvolutionIds.has(pokemon.id) || filters.allowEvolutionDup))
+      ) {
+        if (await acceptCandidate()) {
+          drawn.push(pokemon)
+          usedIds.add(pokemon.id)
+          if (!filters.allowDup && !filters.allowEvolutionDup) {
+            try {
+              const evoIds = await getEvolutionChainIdsByPokemon(pokemon.id)
+              evoIds.forEach((id) => usedEvolutionIds.add(id))
+            } catch {}
+          }
         }
       }
     }
@@ -482,6 +505,38 @@ export function PokemonGacha() {
                   <Label htmlFor="allowDup" className="text-sm">
                     중복 허용
                   </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allowEvolutionDup"
+                    checked={!!filters.allowEvolutionDup}
+                    onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, allowEvolutionDup: !!checked }))}
+                  />
+                  <Label htmlFor="allowEvolutionDup" className="text-sm">
+                    진화 라인 중복 허용
+                  </Label>
+                </div>
+                <div className="space-y-2">
+                  <Label className="pixel-title text-sm">진화 단계 모드</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        { k: "any" as const, l: "전체" },
+                        { k: "base" as const, l: "기본형만" },
+                        { k: "final" as const, l: "최종진화만" },
+                      ]
+                    ).map((opt) => (
+                      <Button
+                        key={opt.k}
+                        variant="outline"
+                        size="sm"
+                        className={`pixel-button ${filters.evolutionMode === opt.k ? "bg-primary text-primary-foreground" : "bg-transparent"}`}
+                        onClick={() => setFilters((prev) => ({ ...prev, evolutionMode: opt.k }))}
+                      >
+                        {opt.l}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
