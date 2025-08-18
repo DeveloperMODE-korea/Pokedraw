@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { Press_Start_2P, Noto_Sans_KR } from "next/font/google"
 import "./globals.css"
+import { Analytics } from "@vercel/analytics/react"
 
 const pressStart2P = Press_Start_2P({
   weight: "400",
@@ -41,7 +42,10 @@ html {
 }
         `}</style>
       </head>
-      <body className={`${pressStart2P.variable} ${notoSansKR.variable} antialiased`}>{children}</body>
+      <body className={`${pressStart2P.variable} ${notoSansKR.variable} antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }
