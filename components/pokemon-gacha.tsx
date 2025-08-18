@@ -237,50 +237,52 @@ export function PokemonGacha() {
     const usedIds = new Set<number>()
     const usedEvolutionIds = new Set<number>()
 
-    for (let i = 0; i < filters.count; i++) {
+    let i = 0
+    const MAX_ATTEMPTS_PER_SLOT = 300
+    while (i < filters.count) {
       let attempts = 0
-      let pokemon: PokemonLite
-
-      do {
-        pokemon = availablePokemon[Math.floor(Math.random() * availablePokemon.length)]
+      let added = false
+      while (attempts < MAX_ATTEMPTS_PER_SLOT) {
         attempts++
-      } while (
-        !filters.allowDup &&
-        (usedIds.has(pokemon.id) || usedEvolutionIds.has(pokemon.id)) &&
-        attempts < 80
-      )
+        const pokemon = availablePokemon[Math.floor(Math.random() * availablePokemon.length)]
 
-      const acceptCandidate = async (): Promise<boolean> => {
-        if (filters.evolutionMode === "any") return true
-        try {
-          const info = await getEvolutionStageInfoByPokemon(pokemon.id)
-          if (filters.evolutionMode === "base") {
-            return info.baseId === pokemon.id
-          }
-          if (filters.evolutionMode === "final") {
-            return info.finalIds.includes(pokemon.id)
-          }
-          return true
-        } catch {
-          return true
+        if (
+          !filters.allowDup &&
+          (usedIds.has(pokemon.id) || (!filters.allowEvolutionDup && usedEvolutionIds.has(pokemon.id)))
+        ) {
+          continue
         }
-      }
 
-      if (
-        filters.allowDup ||
-        (!usedIds.has(pokemon.id) && (!usedEvolutionIds.has(pokemon.id) || filters.allowEvolutionDup))
-      ) {
-        if (await acceptCandidate()) {
-          drawn.push(pokemon)
-          usedIds.add(pokemon.id)
-          if (!filters.allowDup && !filters.allowEvolutionDup) {
-            try {
-              const evoIds = await getEvolutionChainIdsByPokemon(pokemon.id)
-              evoIds.forEach((id) => usedEvolutionIds.add(id))
-            } catch {}
+        // evolution stage mode check
+        let stageOk = true
+        if (filters.evolutionMode !== "any") {
+          try {
+            const info = await getEvolutionStageInfoByPokemon(pokemon.id)
+            if (filters.evolutionMode === "base") stageOk = info.baseId === pokemon.id
+            if (filters.evolutionMode === "final") stageOk = info.finalIds.includes(pokemon.id)
+            // also cache chain ids for dedupe
+            if (!filters.allowDup && !filters.allowEvolutionDup) {
+              info.chainIds.forEach((id) => usedEvolutionIds.add(id))
+            }
+          } catch {
+            stageOk = true
           }
         }
+        if (!stageOk) continue
+
+        drawn.push(pokemon)
+        usedIds.add(pokemon.id)
+        if (!filters.allowDup && !filters.allowEvolutionDup && filters.evolutionMode === "any") {
+          try {
+            const info = await getEvolutionStageInfoByPokemon(pokemon.id)
+            info.chainIds.forEach((id) => usedEvolutionIds.add(id))
+          } catch {}
+        }
+        added = true
+        break
       }
+      if (!added) break
+      i++
     }
 
     // Simulate drawing animation delay
