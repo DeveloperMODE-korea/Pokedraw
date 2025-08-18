@@ -79,10 +79,10 @@ export function usePokemonData(filters: GachaFilter): UsePokemonDataReturn {
         }
       }
 
-      // 결과가 너무 많은 경우 제한
-      if (candidateIds.length > 800) {
-        candidateIds = candidateIds.slice(0, 800)
-        console.log(`결과 제한: 800마리로 제한됨`)
+      // 결과가 너무 많은 경우 제한 (최대 1200마리)
+      if (candidateIds.length > 1200) {
+        candidateIds = candidateIds.slice(0, 1200)
+        console.log(`결과 제한: 1200마리로 제한됨`)
       }
 
       // 포켓몬 데이터 가져오기

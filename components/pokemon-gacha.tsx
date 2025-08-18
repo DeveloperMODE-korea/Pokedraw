@@ -212,7 +212,7 @@ export function PokemonGacha() {
   const [includeHiddenAbility, setIncludeHiddenAbility] = useState(false)
   const [detailExtras, setDetailExtras] = useState<Record<number, { encounters: string[]; evo: string[] }>>({})
   const [filters, setFilters] = useState<GachaFilter>({
-    gens: [1, 2, 3, 4, 5],
+    gens: [1, 2, 3, 4, 5, 6, 7, 8, 9],
     types: [],
     generationTypeFilters: [],
     bst: [200, 720],
@@ -392,7 +392,7 @@ export function PokemonGacha() {
               <div className="space-y-2">
                 <Label className="pixel-title text-sm">세대</Label>
                 <div className="flex flex-wrap gap-2">
-                  {[1, 2, 3, 4, 5].map((gen) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((gen) => (
                     <Button
                       key={gen}
                       variant="outline"
