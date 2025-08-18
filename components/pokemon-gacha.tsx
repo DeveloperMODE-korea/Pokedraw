@@ -510,9 +510,14 @@ export function PokemonGacha() {
                   <Checkbox
                     id="allowEvolutionDup"
                     checked={!!filters.allowEvolutionDup}
+                    disabled={filters.evolutionMode !== "any"}
                     onCheckedChange={(checked) => setFilters((prev) => ({ ...prev, allowEvolutionDup: !!checked }))}
                   />
-                  <Label htmlFor="allowEvolutionDup" className="text-sm">
+                  <Label
+                    htmlFor="allowEvolutionDup"
+                    className={`text-sm ${filters.evolutionMode !== "any" ? "text-muted-foreground" : ""}`}
+                    title={filters.evolutionMode !== "any" ? "기본형/최종진화 모드에서는 의미가 없어 비활성화됩니다" : undefined}
+                  >
                     진화 라인 중복 허용
                   </Label>
                 </div>
@@ -537,6 +542,9 @@ export function PokemonGacha() {
                       </Button>
                     ))}
                   </div>
+                  {filters.evolutionMode !== "any" && (
+                    <div className="text-xs text-muted-foreground mt-1">현재 모드에서는 진화 라인 중복 옵션이 비활성화됩니다.</div>
+                  )}
                 </div>
               </div>
 
