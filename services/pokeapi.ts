@@ -91,6 +91,26 @@ interface PokeAPIMoveResource {
   names?: PokeAPINameEntry[]
 }
 
+// Encounters
+export interface PokeAPIEncounter {
+  location_area: { name: string; url: string }
+}
+
+// Evolution chain
+interface PokeAPIEvolutionChainNode {
+  species: { name: string; url: string }
+  evolves_to: PokeAPIEvolutionChainNode[]
+}
+interface PokeAPIEvolutionChain {
+  id: number
+  chain: PokeAPIEvolutionChainNode
+}
+
+// Location area resource for localization
+interface PokeAPILocationArea {
+  names?: PokeAPINameEntry[]
+}
+
 const POKEAPI_BASE = "https://pokeapi.co/api/v2"
 
 // Cache for API responses
@@ -254,6 +274,19 @@ async function fetchAbilityResource(idOrName: string | number): Promise<PokeAPIA
 async function fetchMoveResource(idOrName: string | number): Promise<PokeAPIMoveResource> {
   const url = `${POKEAPI_BASE}/move/${idOrName}`
   return fetchWithCache<PokeAPIMoveResource>(url)
+}
+
+export async function fetchPokemonEncounters(idOrName: number | string): Promise<PokeAPIEncounter[]> {
+  const url = `${POKEAPI_BASE}/pokemon/${idOrName}/encounters`
+  return fetchWithCache<PokeAPIEncounter[]>(url)
+}
+
+async function fetchEvolutionChainByUrl(url: string): Promise<PokeAPIEvolutionChain> {
+  return fetchWithCache<PokeAPIEvolutionChain>(url)
+}
+
+async function fetchLocationAreaByUrl(url: string): Promise<PokeAPILocationArea> {
+  return fetchWithCache<PokeAPILocationArea>(url)
 }
 
 // Get Pokemon IDs from generation
@@ -429,6 +462,96 @@ export async function getMoveNameKo(idOrName: string | number): Promise<string> 
   } catch (e) {
     console.error("getMoveNameKo failed", e)
     return typeof idOrName === "string" ? koFallbackFromSlug(idOrName) : String(idOrName)
+  }
+}
+
+// --- Encounters (Korean where available) ---
+const locationAreaKoCache = new Map<string, string>()
+
+export async function getEncounterAreasKo(
+  idOrName: number | string,
+  limit = 5,
+): Promise<string[]> {
+  try {
+    const data = await fetchPokemonEncounters(idOrName)
+    const uniqueAreas: Array<{ name: string; url: string }> = []
+    const seen = new Set<string>()
+    for (const e of data) {
+      if (!seen.has(e.location_area.name)) {
+        seen.add(e.location_area.name)
+        uniqueAreas.push(e.location_area)
+      }
+      if (uniqueAreas.length >= limit) break
+    }
+
+    const names = await Promise.all(
+      uniqueAreas.map(async (a) => {
+        if (locationAreaKoCache.has(a.url)) return locationAreaKoCache.get(a.url) as string
+        try {
+          const res = await fetchLocationAreaByUrl(a.url)
+          const ko = res.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
+          const pretty = ko || a.name.replace(/-/g, " ")
+          locationAreaKoCache.set(a.url, pretty)
+          return pretty
+        } catch {
+          return a.name.replace(/-/g, " ")
+        }
+      }),
+    )
+    return names
+  } catch (e) {
+    console.error("getEncounterAreasKo failed", e)
+    return []
+  }
+}
+
+// --- Evolution chain (Korean) ---
+const speciesKoCache = new Map<number, string>()
+
+async function getSpeciesKoNameByUrl(url: string): Promise<string> {
+  const match = url.match(/\/pokemon-species\/(\d+)\//)
+  const id = match ? Number.parseInt(match[1]) : 0
+  if (id && speciesKoCache.has(id)) return speciesKoCache.get(id) as string
+  try {
+    const species = await fetchPokemonSpecies(id || url)
+    const ko = species.names?.find((n) => n.language?.name === "ko" || n.language?.name === "ko-Hrkt")?.name
+    const name = ko || `#${id}`
+    if (id) speciesKoCache.set(id, name)
+    return name
+  } catch {
+    return `#${id}`
+  }
+}
+
+function flattenEvolutionChain(node: PokeAPIEvolutionChainNode, acc: string[] = []): string[] {
+  acc.push(node.species.url)
+  if (node.evolves_to && node.evolves_to.length > 0) {
+    for (const child of node.evolves_to) flattenEvolutionChain(child, acc)
+  }
+  return acc
+}
+
+export async function getEvolutionChainKoByPokemon(idOrName: number | string): Promise<string[]> {
+  try {
+    const species = await fetchPokemonSpecies(idOrName)
+    const chainUrl = (species as any).evolution_chain?.url as string | undefined
+    if (!chainUrl) return []
+    const chain = await fetchEvolutionChainByUrl(chainUrl)
+    const urls = flattenEvolutionChain(chain.chain, [])
+    const names = await Promise.all(urls.map((u) => getSpeciesKoNameByUrl(u)))
+    // Deduplicate while preserving order
+    const seen = new Set<string>()
+    const ordered: string[] = []
+    for (const n of names) {
+      if (!seen.has(n)) {
+        seen.add(n)
+        ordered.push(n)
+      }
+    }
+    return ordered
+  } catch (e) {
+    console.error("getEvolutionChainKoByPokemon failed", e)
+    return []
   }
 }
 

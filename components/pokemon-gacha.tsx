@@ -18,6 +18,8 @@ import {
   getRandomMovesForPokemon,
   getAbilityNameKo,
   getMoveNameKo,
+  getEncounterAreasKo,
+  getEvolutionChainKoByPokemon,
 } from "@/services/pokeapi"
 
 const POKEMON_TYPES = [
@@ -208,6 +210,7 @@ export function PokemonGacha() {
   const [rollingAllAbilities, setRollingAllAbilities] = useState(false)
   const [rollingAllMoves, setRollingAllMoves] = useState(false)
   const [includeHiddenAbility, setIncludeHiddenAbility] = useState(false)
+  const [detailExtras, setDetailExtras] = useState<Record<number, { encounters: string[]; evo: string[] }>>({})
   const [filters, setFilters] = useState<GachaFilter>({
     gens: [1, 2, 3, 4, 5],
     types: [],
@@ -290,6 +293,14 @@ export function PokemonGacha() {
     const moveSlugs = await getRandomMovesForPokemon(pokemon.id, count)
     const koMoves = await Promise.all(moveSlugs.map((m) => getMoveNameKo(m)))
     setMovesMap((prev) => ({ ...prev, [pokemon.id]: koMoves }))
+  }
+
+  const loadExtras = async (pokemon: PokemonLite) => {
+    const [encounters, evo] = await Promise.all([
+      getEncounterAreasKo(pokemon.id, 5),
+      getEvolutionChainKoByPokemon(pokemon.id),
+    ])
+    setDetailExtras((prev) => ({ ...prev, [pokemon.id]: { encounters, evo } }))
   }
 
   const rollAllTeamAbilities = async () => {
@@ -629,6 +640,44 @@ export function PokemonGacha() {
                       ))}
                       {(movesMap[p.id] ?? []).length === 0 && (
                         <span className="text-sm text-muted-foreground">아직 없음</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">출현 지역</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="pixel-button bg-transparent"
+                        onClick={() => loadExtras(p)}
+                      >
+                        불러오기
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {(detailExtras[p.id]?.encounters ?? []).map((n) => (
+                        <Badge key={n} variant="secondary" className="text-xs">
+                          {n}
+                        </Badge>
+                      ))}
+                      {!(detailExtras[p.id]?.encounters?.length) && (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">진화 체인</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {(detailExtras[p.id]?.evo ?? []).map((n) => (
+                        <Badge key={n} variant="outline" className="text-xs">
+                          {n}
+                        </Badge>
+                      ))}
+                      {!(detailExtras[p.id]?.evo?.length) && (
+                        <span className="text-sm text-muted-foreground">-</span>
                       )}
                     </div>
                   </div>
