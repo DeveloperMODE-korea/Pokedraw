@@ -78,8 +78,14 @@ export function NatureRoulette() {
     // Calculate random rotation (multiple full spins + random position)
     const selectedNature = getRandomNature()
     const selectedIndex = NATURES.findIndex((n) => n.id === selectedNature.id)
+
+    // Empirical fix: The rotation calculation has a consistent offset of roughly -6 slices.
+    // We adjust the target index to compensate for this offset.
+    const indexOffset = -6
+    const adjustedIndex = (selectedIndex + indexOffset + NATURES.length) % NATURES.length
+
     const anglePerSlice = 360 / NATURES.length
-    const targetAngle = selectedIndex * anglePerSlice
+    const targetAngle = adjustedIndex * anglePerSlice // Use adjusted index
     const fullSpins = 5 + Math.random() * 3 // 5-8 full rotations
     // 포인터가 위쪽(12시 방향, 270도)에 있으므로, 해당 슬라이스가 포인터에 맞도록 회전
     const finalRotation = rotation + fullSpins * 360 + (270 - targetAngle - anglePerSlice / 2)
@@ -89,7 +95,7 @@ export function NatureRoulette() {
     // Wait for animation to complete
     setTimeout(() => {
       setIsSpinning(false)
-      setResult(selectedNature)
+      setResult(selectedNature) // Show the original, correct result
 
       // Blink pointer 3 times
       let blinkCount = 0
