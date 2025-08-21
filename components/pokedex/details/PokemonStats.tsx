@@ -9,11 +9,11 @@ interface PokemonStatsProps {
 
 const statNameMapping: { [key: string]: string } = {
     hp: 'HP',
-    attack: 'Attack',
-    defense: 'Defense',
-    'special-attack': 'Sp. Atk',
-    'special-defense': 'Sp. Def',
-    speed: 'Speed',
+    attack: '공격',
+    defense: '방어',
+    'special-attack': '특공',
+    'special-defense': '특방',
+    speed: '스피드',
 };
 
 const statColorMapping: { [key: string]: string } = {
