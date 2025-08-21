@@ -739,11 +739,28 @@ export async function fetchPokemonBatch(
 
 // Helper to extract a clean sprite object
 function getSpriteUrls(sprites: PokeAPISprites) {
+  const placeholder = '/diverse-pokemon-gathering.png'
+
+  const artwork =
+    sprites.other?.['official-artwork']?.front_default ||
+    sprites.front_default ||
+    placeholder
+
+  const defaultSprite =
+    sprites.front_default ||
+    sprites.other?.['official-artwork']?.front_default ||
+    placeholder
+
+  const shiny =
+    sprites.other?.['official-artwork']?.front_shiny ||
+    sprites.front_shiny ||
+    placeholder
+
   return {
-    default: sprites.other?.['official-artwork']?.front_default || sprites.front_default || '/placeholder.svg',
-    shiny: sprites.other?.['official-artwork']?.front_shiny || sprites.front_shiny || '/placeholder.svg',
-    animated: sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default || sprites.front_default || '/placeholder.svg',
-  };
+    default: defaultSprite,
+    shiny,
+    artwork,
+  }
 }
 
 // Helper to parse the evolution chain
