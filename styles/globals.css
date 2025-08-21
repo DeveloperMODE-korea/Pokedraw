@@ -158,6 +158,31 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Pokeball loader */
+  .pokeball-loader {
+    width: 4rem; height: 4rem; border-radius: 50%; position: relative; display: inline-block;
+    background: linear-gradient(to bottom, var(--pokeball-red) 50%, var(--pokeball-white) 50%);
+    border: 3px solid var(--pokeball-black);
+    box-shadow: var(--pdx-shadow-2);
+    animation: pokeball-shake 1.2s ease-in-out infinite;
+  }
+  .pokeball-loader::before {
+    content: ""; position: absolute; inset: 50% auto auto 0; transform: translate(0,-50%);
+    width: 100%; height: 3px; background: var(--pokeball-black);
+  }
+  .pokeball-loader::after {
+    content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 1.4rem; height: 1.4rem; border-radius: 50%; background: var(--pokeball-white);
+    border: 3px solid var(--pokeball-black); box-shadow: inset 0 0 0 3px var(--pokeball-gray);
+  }
+  @keyframes pokeball-shake {
+    0%, 100% { transform: rotate(0deg); }
+    15% { transform: rotate(-15deg); }
+    30% { transform: rotate(12deg); }
+    45% { transform: rotate(-8deg); }
+    60% { transform: rotate(6deg); }
+    75% { transform: rotate(-3deg); }
+  }
   /* Helper classes that can be used progressively without refactors */
   .pdx-elev-1 { box-shadow: var(--pdx-shadow-1); }
   .pdx-elev-2 { box-shadow: var(--pdx-shadow-2); }

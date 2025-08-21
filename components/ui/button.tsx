@@ -20,6 +20,8 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        pokeball:
+          "relative bg-[var(--pokeball-red)] text-white shadow-xs hover:brightness-95 before:absolute before:inset-x-0 before:top-1/2 before:h-[3px] before:bg-[var(--pokeball-black)] before:-translate-y-1/2 after:absolute after:top-1/2 after:left-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:size-4 after:rounded-full after:bg-[var(--pokeball-white)] after:border after:border-[var(--pokeball-black)]",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
