@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { Share2, Settings, RotateCcw, TrendingUp, Dices } from "lucide-react"
+import { Share2, Settings, RotateCcw, TrendingUp, Dices, ChevronDown, ChevronUp } from "lucide-react"
 import type { IVSet, StatKey } from "@/types/pokemon"
 
 const STAT_NAMES: Record<StatKey, string> = {
@@ -155,6 +155,7 @@ export function IVRoulette() {
   const [result, setResult] = useState<IVSet | null>(null)
   const [completedReels, setCompletedReels] = useState(0)
   const [showOptions, setShowOptions] = useState(false)
+  const [isResultOpen, setIsResultOpen] = useState(true)
   const [options, setOptions] = useState<IVOptions>({
     minValue: 0,
     maxValue: 31,
@@ -327,10 +328,39 @@ export function IVRoulette() {
             transition={{ duration: 0.5 }}
           >
             <Card className="pixel-box" aria-live="polite">
-              <CardHeader className="text-center">
+              <CardHeader className="flex items-center justify-between">
                 <CardTitle className="pixel-title text-xl text-primary">개체값 결과</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="pixel-button bg-transparent"
+                  onClick={() => setShowOptions((o) => o)}
+                  aria-hidden
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="pixel-button bg-transparent"
+                  onClick={() => setIsResultOpen((v) => !v)}
+                  aria-expanded={isResultOpen}
+                  aria-controls="iv-results-panel"
+                >
+                  {isResultOpen ? <ChevronUp className="w-4 h-4 mr-1" /> : <ChevronDown className="w-4 h-4 mr-1" />}
+                  {isResultOpen ? "접기" : "열기"}
+                </Button>
               </CardHeader>
-              <CardContent className="space-y-6">
+
+              <AnimatePresence initial={false}>
+                {isResultOpen && (
+                  <motion.div
+                    id="iv-results-panel"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: prefersReducedMotion ? 0.05 : 0.25 }}
+                  >
+                    <CardContent className="space-y-6">
                 {/* Stats Summary */}
                 {(() => {
                   const stats = calculateStats(result)
@@ -382,7 +412,10 @@ export function IVRoulette() {
                     다시 돌리기
                   </Button>
                 </div>
-              </CardContent>
+                    </CardContent>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </Card>
           </motion.div>
         )}
