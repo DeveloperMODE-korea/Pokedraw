@@ -203,6 +203,11 @@
     0%, 100% { opacity: 1; transform: translateY(0); }
     50% { opacity: 0.5; transform: translateY(-2px); }
   }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+  }
   /* Helper classes that can be used progressively without refactors */
   .pdx-elev-1 { box-shadow: var(--pdx-shadow-1); }
   .pdx-elev-2 { box-shadow: var(--pdx-shadow-2); }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -49,6 +49,7 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete, onIndividual
   const [isAnimating, setIsAnimating] = useState(false)
   const [isIndividualRolling, setIsIndividualRolling] = useState(false)
   const intervalRef = useRef<NodeJS.Timeout>()
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     if ((isRolling || isIndividualRolling) && !isAnimating) {
@@ -76,8 +77,8 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete, onIndividual
               onComplete()
             }
           },
-          1600 + Math.random() * 400,
-        ) // 1.6s - 2.0s
+          (prefersReducedMotion ? 600 : 1600) + Math.random() * (prefersReducedMotion ? 100 : 400),
+        ) // reduced motion shorter
       }, actualDelay)
     }
 
@@ -112,8 +113,8 @@ function SlotReel({ stat, finalValue, isRolling, delay, onComplete, onIndividual
                 }
           }
           transition={{
-            duration: isAnimating ? 0.1 : 0.3,
-            repeat: isAnimating ? Number.POSITIVE_INFINITY : 0,
+            duration: prefersReducedMotion ? 0.01 : (isAnimating ? 0.1 : 0.3),
+            repeat: prefersReducedMotion ? 0 : (isAnimating ? Number.POSITIVE_INFINITY : 0),
             ease: "easeInOut",
           }}
         >
@@ -158,6 +159,7 @@ export function IVRoulette() {
     minValue: 0,
     maxValue: 31,
   })
+  const prefersReducedMotion = useReducedMotion()
 
   const generateIVs = (): IVSet => {
     const { minValue, maxValue } = options
@@ -317,7 +319,7 @@ export function IVRoulette() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="pixel-box">
+            <Card className="pixel-box" aria-live="polite">
               <CardHeader className="text-center">
                 <CardTitle className="pixel-title text-xl text-primary">개체값 결과</CardTitle>
               </CardHeader>

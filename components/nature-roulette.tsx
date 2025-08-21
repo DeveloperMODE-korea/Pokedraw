@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -67,6 +67,7 @@ export function NatureRoulette() {
   const [result, setResult] = useState<Nature | null>(null)
   const [rotation, setRotation] = useState(0)
   const [showPointer, setShowPointer] = useState(true)
+  const prefersReducedMotion = useReducedMotion()
 
   const spinRoulette = async () => {
     if (isSpinning) return
@@ -131,7 +132,7 @@ export function NatureRoulette() {
               style={{ width: WHEEL_SIZE, height: WHEEL_SIZE }}
               animate={{ rotate: rotation }}
               transition={{
-                duration: isSpinning ? 2.2 : 0,
+                duration: isSpinning ? (prefersReducedMotion ? 0.6 : 2.2) : 0,
                 ease: isSpinning ? "easeOut" : "linear",
               }}
             >
@@ -210,8 +211,8 @@ export function NatureRoulette() {
               className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 ${
                 showPointer ? "opacity-100" : "opacity-0"
               }`}
-              animate={isSpinning ? { scale: [1, 1.1, 1] } : {}}
-              transition={{ duration: 0.6, repeat: isSpinning ? Infinity : 0 }}
+              animate={isSpinning && !prefersReducedMotion ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: prefersReducedMotion ? 0.01 : 0.6, repeat: isSpinning && !prefersReducedMotion ? Infinity : 0 }}
             >
               <div className="pokeball-pointer" />
             </motion.div>
@@ -235,7 +236,7 @@ export function NatureRoulette() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            <Card className="pixel-box">
+            <Card className="pixel-box" aria-live="polite">
               <CardHeader className="text-center">
                 <CardTitle className="pixel-title text-2xl text-primary">결과</CardTitle>
               </CardHeader>
