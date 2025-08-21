@@ -75,27 +75,29 @@ export function NatureRoulette() {
     setResult(null)
     setShowPointer(true)
 
-    // Calculate random rotation (multiple full spins + random position)
-    const selectedNature = getRandomNature()
-    const selectedIndex = NATURES.findIndex((n) => n.id === selectedNature.id)
-
-    // Empirical fix: The rotation calculation has a consistent offset. 
-    // The wheel over-rotates by ~6 slices, so we adjust the target index to compensate.
-    const indexOffset = 6 // Positive offset to make the wheel rotate less
-    const adjustedIndex = (selectedIndex + indexOffset) % NATURES.length
-
     const anglePerSlice = 360 / NATURES.length
-    const targetAngle = adjustedIndex * anglePerSlice // Use adjusted index
-    const fullSpins = 5 + Math.random() * 3 // 5-8 full rotations
-    // 포인터가 위쪽(12시 방향, 270도)에 있으므로, 해당 슬라이스가 포인터에 맞도록 회전
+    
+    // 1. Pick a random target index for visual spinning effect
+    const targetIndex = Math.floor(Math.random() * NATURES.length)
+    const targetAngle = targetIndex * anglePerSlice
+    const fullSpins = 5 + Math.random() * 3
+    
+    // We still use the formula to try and land near the target, but it doesn't need to be perfect.
     const finalRotation = rotation + fullSpins * 360 + (270 - targetAngle - anglePerSlice / 2)
 
     setRotation(finalRotation)
 
-    // Wait for animation to complete
+    // 2. After animation, determine the result from the final rotation
     setTimeout(() => {
+      // The pointer is at 270 degrees. Find which angle of the wheel is under it.
+      const wheelAngleAtPointer = (360 - (finalRotation % 360) + 270) % 360
+      
+      // Determine which slice this angle falls into.
+      const resultIndex = Math.floor(wheelAngleAtPointer / anglePerSlice)
+      const actualResult = NATURES[resultIndex]
+
       setIsSpinning(false)
-      setResult(selectedNature) // Show the original, correct result
+      setResult(actualResult) // 3. Set the result to what the user actually sees
 
       // Blink pointer 3 times
       let blinkCount = 0
@@ -103,12 +105,11 @@ export function NatureRoulette() {
         setShowPointer((prev) => !prev)
         blinkCount++
         if (blinkCount >= 6) {
-          // 3 complete blinks (on/off cycles)
           clearInterval(blinkInterval)
           setShowPointer(true)
         }
       }, 250)
-    }, 2200)
+    }, 2200) // This must match the animation duration
   }
 
   const shareResult = () => {
