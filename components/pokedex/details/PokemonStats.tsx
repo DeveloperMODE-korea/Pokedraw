@@ -66,6 +66,4 @@ export function PokemonStats({ pokemon }: PokemonStatsProps) {
     </Card>
   );
 }
-ard>
-  );
-}
+
