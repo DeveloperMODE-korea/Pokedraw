@@ -7,7 +7,7 @@
 ### 🎲 성격 룰렛
 - 포켓몬 성격을 랜덤으로 뽑아보세요
 - 스탯 보정 정보와 함께 표시됩니다
-- 애니메이션 효과로 재미있는 경험을 제공합니다
+- 포켓볼 포인터 + 정확한 결과 정렬, 애니메이션 효과 제공
 
 ### ⚡ 개체값 룰렛
 - 슬롯머신 애니메이션으로 개체값을 생성합니다
@@ -21,9 +21,14 @@
 - 종족값(BST) 범위 설정 가능
 - 중복 허용/비허용 옵션
 
+### 📖 포켓몬 도감(상세)
+- 공식 아트워크 기반 히어로 섹션 + 글로시(유리 코팅) 오버레이
+- 타입 배지 한글화 및 타입별 색상 토큰 적용
+- 능력/개체값/진화 정보 제공
+
 ## 🚀 기술 스택
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
 - **UI Components**: Shadcn/ui
@@ -69,38 +74,52 @@ npm run build
 
 ```
 pokedraw/
-├── app/                    # Next.js App Router
-│   ├── gacha/             # 포켓몬 가챠 페이지
-│   ├── iv/                # 개체값 룰렛 페이지
-│   ├── nature/            # 성격 룰렛 페이지
-│   ├── globals.css        # 전역 스타일
-│   ├── layout.tsx         # 루트 레이아웃
-│   └── page.tsx           # 메인 페이지
-├── components/            # React 컴포넌트
-│   ├── ui/               # Shadcn/ui 컴포넌트
-│   ├── iv-roulette.tsx   # 개체값 룰렛 컴포넌트
-│   ├── nature-roulette.tsx # 성격 룰렛 컴포넌트
-│   ├── pokemon-gacha.tsx # 포켓몬 가챠 컴포넌트
-│   └── theme-provider.tsx # 테마 프로바이더
-├── data/                 # 정적 데이터
-│   ├── mock-pokemon.ts   # 포켓몬 타입 색상 등
-│   └── natures.ts        # 성격 데이터
-├── hooks/                # 커스텀 훅
-│   └── use-pokemon-data.ts # 포켓몬 데이터 훅
-├── services/             # API 서비스
-│   └── pokeapi.ts        # PokéAPI 연동
-├── types/                # TypeScript 타입 정의
-│   └── pokemon.ts        # 포켓몬 관련 타입
-└── public/               # 정적 파일
-    └── *.png             # 포켓몬 이미지들
+├── app/                        # Next.js App Router
+│   ├── gacha/                 # 포켓몬 가챠 페이지
+│   ├── iv/                    # 개체값 룰렛 페이지
+│   ├── nature/                # 성격 룰렛 페이지
+│   ├── pokedex/               # 도감
+│   │   └── [id]/page.tsx      # 도감 상세 페이지
+│   ├── globals.css            # 전역 스타일
+│   ├── layout.tsx             # 루트 레이아웃
+│   └── page.tsx               # 메인 페이지
+├── components/                # React 컴포넌트
+│   ├── ui/                   # Shadcn/ui 컴포넌트
+│   ├── pokedex/              # 도감 상세용 컴포넌트
+│   │   └── details/          # Header/About/Stats/Evolution 등
+│   ├── iv-roulette.tsx       # 개체값 룰렛 컴포넌트
+│   ├── nature-roulette.tsx   # 성격 룰렛 컴포넌트
+│   ├── pokemon-gacha.tsx     # 포켓몬 가챠 컴포넌트
+│   └── theme-provider.tsx     # 테마 프로바이더
+├── data/                     # 정적 데이터
+│   ├── mock-pokemon.ts       # 포켓몬 샘플
+│   ├── type-data.ts          # 타입 색상/라벨
+│   └── natures.ts            # 성격 데이터
+├── services/                 # API 서비스
+│   └── pokeapi.ts            # PokéAPI 연동
+├── styles/                   # 전역 스타일
+│   └── globals.css           # 디자인 토큰/유틸리티(타입 컬러, 포켓볼 로더 등)
+├── types/                    # TypeScript 타입 정의
+│   └── pokemon.ts            # 포켓몬 관련 타입
+└── public/                   # 정적 파일
+    └── *.png                 # 포켓몬 이미지들
 ```
 
 ## 🎨 UI/UX 특징
 
 - **픽셀 아트 스타일**: 레트로 게임 느낌의 픽셀 디자인
-- **반응형 디자인**: 모바일, 태블릿, 데스크톱 모든 기기 지원
-- **부드러운 애니메이션**: Framer Motion을 활용한 자연스러운 전환 효과
+- **타입 컬러 토큰**: `styles/globals.css`에 타입별 CSS 변수와 유틸 클래스 제공
+- **포켓볼 요소**: 포켓볼 로더/버튼 변형, 룰렛 포인터 포켓볼화
+- **글로시 아트워크**: 도감 상세 아트워크 위 유리 코팅 오버레이
+- **부드러운 애니메이션**: Framer Motion 기반 모션 시스템
+- **감소된 모션 대응**: `prefers-reduced-motion` 지원(자동 단축/비활성화)
+- **반응형 디자인**: 모바일/태블릿/데스크톱 지원
 - **다크/라이트 모드**: 사용자 선호도에 따른 테마 전환
+
+## ♿ 접근성
+- 결과 카드 `aria-live="polite"` 적용으로 스크린리더 공지
+- 대비 개선 가이드 및 타입 배지 텍스트 컬러 자동 선택 규칙 적용
+- 모션 민감 사용자 위한 reduced-motion 전역 규칙 적용
 
 ## 🔧 주요 기능 상세
 
@@ -120,7 +139,8 @@ pokedraw/
 ### 성격 룰렛
 - **25가지 성격**: 모든 포켓몬 성격 지원
 - **스탯 보정 표시**: 증가/감소 스탯을 명확히 표시
-- **랜덤 애니메이션**: 룰렛 돌리기 효과
+- **정렬 보정**: 포인터와 결과 일치(중앙 정렬 보정)
+- **포인터 포켓볼화**: 회전 중 펄스 마이크로 인터랙션
 
 ## 📱 반응형 지원
 
