@@ -42,7 +42,7 @@ export function PokemonAbout({ pokemon }: PokemonAboutProps) {
           <InfoRow label="Catch Rate" value={pokemon.catchRate} />
           <InfoRow label="Base Friendship" value={pokemon.baseFriendship} />
           <InfoRow label="Growth Rate" value={pokemon.growthRate.replace(/-/g, ' ')} />
-          <InfoRow label="Egg Groups" value={pokemon.eggGroups.join(', ')} />
+          <InfoRow label="알 그룹" value={pokemon.eggGroups.join(', ')} />
           <InfoRow 
             label="Gender" 
             value={<GenderBar male={pokemon.genderRatio.male} female={pokemon.genderRatio.female} />} 
@@ -52,3 +52,4 @@ export function PokemonAbout({ pokemon }: PokemonAboutProps) {
     </Card>
   );
 }
+

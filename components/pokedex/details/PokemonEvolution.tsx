@@ -30,7 +30,7 @@ export function PokemonEvolution({ pokemon }: PokemonEvolutionProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Evolution</CardTitle>
+                <CardTitle>진화</CardTitle>
             </CardHeader>
             <CardContent>
                 <p className="text-muted-foreground text-center">This Pokémon does not evolve.</p>

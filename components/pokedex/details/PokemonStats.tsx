@@ -58,7 +58,7 @@ export function PokemonStats({ pokemon }: PokemonStatsProps) {
           <StatRow key={stat.name} name={stat.name} value={stat.value} />
         ))}
         <div className="grid grid-cols-6 gap-2 items-center pt-2 border-t-2">
-            <dt className="col-span-2 font-bold text-muted-foreground text-right">총합</dt>
+                        <dt className="col-span-2 font-bold text-muted-foreground text-right">총합</dt>
             <dd className="col-span-1 font-bold text-center">{bst}</dd>
             <dd className="col-span-3"></dd>
         </div>
