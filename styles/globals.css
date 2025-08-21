@@ -37,6 +37,39 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Pokedex design tokens */
+  --pdx-radius-soft: 14px;
+  --pdx-radius-hard: 6px;
+  --pdx-shadow-1: 0 1px 2px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.06);
+  --pdx-shadow-2: 0 4px 10px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+  --pdx-shadow-3: 0 12px 24px rgba(0,0,0,0.18), 0 6px 12px rgba(0,0,0,0.12);
+
+  /* Pokéball accents */
+  --pokeball-red: #ef2b2d;
+  --pokeball-white: #f7f7f7;
+  --pokeball-black: #1f1f1f;
+  --pokeball-gray: #cfcfcf;
+
+  /* Pokemon type colors */
+  --type-normal: #a8a77a;
+  --type-fire: #ee8130;
+  --type-water: #6390f0;
+  --type-electric: #f7d02c;
+  --type-grass: #7ac74c;
+  --type-ice: #96d9d6;
+  --type-fighting: #c22e28;
+  --type-poison: #a33ea1;
+  --type-ground: #e2bf65;
+  --type-flying: #a98ff3;
+  --type-psychic: #f95587;
+  --type-bug: #a6b91a;
+  --type-rock: #b6a136;
+  --type-ghost: #735797;
+  --type-dragon: #6f35fc;
+  --type-dark: #705746;
+  --type-steel: #b7b7ce;
+  --type-fairy: #d685ad;
 }
 
 .dark {
@@ -72,6 +105,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+
+  /* Adjusted shadows for dark mode */
+  --pdx-shadow-1: 0 1px 2px rgba(0,0,0,0.6), 0 1px 1px rgba(0,0,0,0.5);
+  --pdx-shadow-2: 0 6px 14px rgba(0,0,0,0.6), 0 3px 7px rgba(0,0,0,0.5);
+  --pdx-shadow-3: 0 16px 28px rgba(0,0,0,0.65), 0 8px 14px rgba(0,0,0,0.55);
 }
 
 @theme inline {
@@ -120,4 +158,30 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Helper classes that can be used progressively without refactors */
+  .pdx-elev-1 { box-shadow: var(--pdx-shadow-1); }
+  .pdx-elev-2 { box-shadow: var(--pdx-shadow-2); }
+  .pdx-elev-3 { box-shadow: var(--pdx-shadow-3); }
+  .pdx-round-soft { border-radius: var(--pdx-radius-soft); }
+  .pdx-round-hard { border-radius: var(--pdx-radius-hard); }
+
+  /* Type background utility classes (optional progressive adoption) */
+  .type-normal { background-color: var(--type-normal); color: #fff; }
+  .type-fire { background-color: var(--type-fire); color: #fff; }
+  .type-water { background-color: var(--type-water); color: #fff; }
+  .type-electric { background-color: var(--type-electric); color: #111; }
+  .type-grass { background-color: var(--type-grass); color: #fff; }
+  .type-ice { background-color: var(--type-ice); color: #111; }
+  .type-fighting { background-color: var(--type-fighting); color: #fff; }
+  .type-poison { background-color: var(--type-poison); color: #fff; }
+  .type-ground { background-color: var(--type-ground); color: #111; }
+  .type-flying { background-color: var(--type-flying); color: #fff; }
+  .type-psychic { background-color: var(--type-psychic); color: #fff; }
+  .type-bug { background-color: var(--type-bug); color: #111; }
+  .type-rock { background-color: var(--type-rock); color: #111; }
+  .type-ghost { background-color: var(--type-ghost); color: #fff; }
+  .type-dragon { background-color: var(--type-dragon); color: #fff; }
+  .type-dark { background-color: var(--type-dark); color: #fff; }
+  .type-steel { background-color: var(--type-steel); color: #111; }
+  .type-fairy { background-color: var(--type-fairy); color: #111; }
 }
