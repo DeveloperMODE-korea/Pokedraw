@@ -35,6 +35,11 @@ export default function HomePage() {
                 가챠
               </Button>
             </Link>
+            <Link href="/pokedex">
+              <Button variant="outline" className="pixel-button bg-transparent">
+                도감
+              </Button>
+            </Link>
           </div>
         </div>
       </nav>
