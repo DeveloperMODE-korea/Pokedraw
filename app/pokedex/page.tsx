@@ -52,7 +52,7 @@ export default function PokedexPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-8 text-center">Pokédex</h1>
+      <h1 className="pixel-title text-3xl md:text-5xl text-center mb-8 tracking-wider">POKEDEX</h1>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {pokemon.map((p) => (
