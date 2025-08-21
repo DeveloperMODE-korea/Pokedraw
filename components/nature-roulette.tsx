@@ -81,8 +81,8 @@ export function NatureRoulette() {
     const anglePerSlice = 360 / NATURES.length
     const targetAngle = selectedIndex * anglePerSlice
     const fullSpins = 5 + Math.random() * 3 // 5-8 full rotations
-    // 포인터가 위쪽(12시 방향)에 있으므로, 해당 슬라이스가 포인터에 맞도록 회전
-    const finalRotation = rotation + fullSpins * 360 + (360 - targetAngle - anglePerSlice / 2)
+    // 포인터가 위쪽(12시 방향, 270도)에 있으므로, 해당 슬라이스가 포인터에 맞도록 회전
+    const finalRotation = rotation + fullSpins * 360 + (270 - targetAngle - anglePerSlice / 2)
 
     setRotation(finalRotation)
 
