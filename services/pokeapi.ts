@@ -677,6 +677,30 @@ export async function getEvolutionStageInfoByPokemon(
 }
 
 // Batch fetch Pokemon with error handling
+export async function getPokemonList({
+  page = 1,
+  limit = 30,
+}: { page?: number; limit?: number }): Promise<{ results: import("@/types/pokemon").PokemonLite[]; count: number }> {
+  const offset = (page - 1) * limit;
+  const listUrl = `${POKEAPI_BASE}/pokemon?limit=${limit}&offset=${offset}`;
+
+  const listResponse = await fetchWithCache<{ count: number; results: Array<{ name: string; url: string }> }>(
+    listUrl
+  );
+
+  const ids = listResponse.results.map((p) => {
+    const match = p.url.match(/\/(\d+)\/$/);
+    return match ? Number.parseInt(match[1]) : 0;
+  }).filter(id => id > 0);
+
+  const pokemonDetails = await fetchPokemonBatch(ids);
+
+  return {
+    results: pokemonDetails,
+    count: listResponse.count,
+  };
+}
+
 export async function fetchPokemonBatch(
   ids: number[],
   maxConcurrent = 20, // Increased from 10
@@ -706,4 +730,124 @@ export async function fetchPokemonBatch(
   }
 
   return results
+}
+
+// --- New function for Pokédex Detail Page ---
+
+// Helper to extract a clean sprite object
+function getSpriteUrls(sprites: PokeAPISprites) {
+  return {
+    default: sprites.other?.['official-artwork']?.front_default || sprites.front_default || '/placeholder.svg',
+    shiny: sprites.other?.['official-artwork']?.front_shiny || sprites.front_shiny || '/placeholder.svg',
+    animated: sprites.versions?.['generation-v']?.['black-white']?.animated?.front_default || sprites.front_default || '/placeholder.svg',
+  };
+}
+
+// Helper to parse the evolution chain
+async function parseEvolutionChain(chainNode: any): Promise<import("@/types/pokemon").EvolutionDetail[]> {
+  const evolutions: import("@/types/pokemon").EvolutionDetail[] = [];
+  let currentNode = chainNode;
+
+  while (currentNode && currentNode.evolves_to.length > 0) {
+    const fromSpecies = await fetchPokemon(currentNode.species.name);
+    for (const evolution of currentNode.evolves_to) {
+      const toSpecies = await fetchPokemon(evolution.species.name);
+      
+      // Find the evolution trigger
+      const details = evolution.evolution_details[0];
+      let trigger = "Unknown";
+      if (details) {
+        if (details.trigger.name === 'level-up') {
+          trigger = `Level ${details.min_level}`;
+        } else if (details.trigger.name === 'trade') {
+          trigger = 'Trade';
+        } else if (details.trigger.name === 'use-item') {
+          trigger = `Use ${details.item.name.replace(/-/g, ' ')}`;
+        } else if (details.trigger.name === 'shed') {
+            trigger = 'Shed';
+        } else {
+            trigger = details.trigger.name.replace(/-/g, ' ');
+        }
+      }
+
+      evolutions.push({
+        from: { 
+          id: fromSpecies.id,
+          name: (await getSpeciesKoNameByUrl(fromSpecies.species.url)) || fromSpecies.name,
+          spriteUrl: getSpriteUrls(fromSpecies.sprites).default,
+        },
+        to: { 
+          id: toSpecies.id,
+          name: (await getSpeciesKoNameByUrl(toSpecies.species.url)) || toSpecies.name,
+          spriteUrl: getSpriteUrls(toSpecies.sprites).default,
+        },
+        trigger,
+      });
+    }
+    currentNode = currentNode.evolves_to[0];
+  }
+  return evolutions;
+}
+
+export async function getFullPokemonDetails(
+  idOrName: string | number
+): Promise<import("@/types/pokemon").FullPokemonDetails | null> {
+  try {
+    // 1. Fetch primary and species data in parallel
+    const [pokemonData, speciesData] = await Promise.all([
+      fetchPokemon(idOrName),
+      fetchPokemonSpecies(idOrName),
+    ]);
+
+    // 2. Fetch evolution chain
+    const evolutionChainUrl = speciesData.evolution_chain?.url;
+    const evolutionChainData = evolutionChainUrl ? await fetchWithCache<any>(evolutionChainUrl) : null;
+
+    // 3. Map data to our FullPokemonDetails structure
+    const koreanName = speciesData.names?.find(n => n.language.name === 'ko')?.name || pokemonData.name;
+    const flavorText = speciesData.flavor_text_entries?.find(ft => ft.language.name === 'ko')?.flavor_text || '';
+
+    const abilities = await Promise.all(
+        pokemonData.abilities?.map(async (a) => {
+            const abilityData = await fetchWithCache<any>(a.ability.url);
+            return {
+                name: a.ability.name,
+                koreanName: abilityData.names?.find(n => n.language.name === 'ko')?.name || a.ability.name,
+                isHidden: a.is_hidden,
+                effect: abilityData.effect_entries?.find(e => e.language.name === 'en')?.short_effect || '',
+            };
+        }) || []
+    );
+
+    const evolutionChain = evolutionChainData ? await parseEvolutionChain(evolutionChainData.chain) : [];
+
+    return {
+      id: pokemonData.id,
+      name: pokemonData.name,
+      koreanName,
+      sprites: getSpriteUrls(pokemonData.sprites),
+      types: pokemonData.types.map((t) => t.type.name),
+      height: pokemonData.height / 10, // Convert to meters
+      weight: pokemonData.weight / 10, // Convert to kg
+      stats: pokemonData.stats.map(s => ({ name: s.stat.name, value: s.base_stat })),
+      abilities,
+      flavorText,
+      generation: getGenerationNumber(speciesData.generation.name),
+      evolutionChain,
+      locations: [], // Placeholder
+      catchRate: speciesData.capture_rate,
+      baseFriendship: speciesData.base_happiness,
+      genderRatio: { 
+          male: speciesData.gender_rate === -1 ? 0 : (8 - speciesData.gender_rate) * 12.5,
+          female: speciesData.gender_rate === -1 ? 0 : speciesData.gender_rate * 12.5,
+          genderless: speciesData.gender_rate === -1,
+       },
+      eggGroups: speciesData.egg_groups.map(g => g.name),
+      growthRate: speciesData.growth_rate.name,
+      moves: [], // Placeholder
+    };
+  } catch (error) {
+    console.error(`Failed to get full details for ${idOrName}:`, error);
+    return null;
+  }
 }

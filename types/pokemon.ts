@@ -51,3 +51,55 @@ export interface PokemonStats {
   specialDefense: number
   speed: number
 }
+
+// --- New Types for Pokédex Detail Page ---
+
+export interface PokemonAbility {
+  name: string;
+  koreanName: string;
+  isHidden: boolean;
+  effect: string;
+}
+
+export interface PokemonMove {
+  name: string;
+  koreanName: string;
+  learnMethod: string;
+  levelLearnedAt?: number;
+  type: string;
+  power?: number;
+  accuracy?: number;
+  pp?: number;
+}
+
+export interface EvolutionDetail {
+  from: { name: string; id: number; spriteUrl: string; };
+  to: { name: string; id: number; spriteUrl: string; };
+  trigger: string; // e.g., "Level 16", "Use Moon Stone"
+}
+
+export interface FullPokemonDetails {
+  id: number;
+  name: string;
+  koreanName: string;
+  sprites: {
+    default: string;
+    shiny: string;
+    artwork: string;
+  };
+  types: string[];
+  height: number; // in meters
+  weight: number; // in kg
+  stats: { name: string; value: number; }[];
+  abilities: PokemonAbility[];
+  flavorText: string;
+  generation: number;
+  evolutionChain: EvolutionDetail[];
+  locations: string[];
+  catchRate: number; // 0-255
+  baseFriendship: number; // 0-255
+  genderRatio: { male: number; female: number; genderless: boolean }; // male/female are percentages
+  eggGroups: string[];
+  growthRate: string;
+  moves: PokemonMove[];
+}
