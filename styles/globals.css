@@ -183,6 +183,26 @@
     60% { transform: rotate(6deg); }
     75% { transform: rotate(-3deg); }
   }
+
+  /* Roulette pointer as a mini Pokéball */
+  .pokeball-pointer {
+    width: 18px; height: 18px; border-radius: 9999px; position: relative;
+    background: linear-gradient(to bottom, var(--pokeball-red) 50%, var(--pokeball-white) 50%);
+    border: 2px solid var(--pokeball-black);
+    filter: drop-shadow(0 2px 0 rgba(0,0,0,0.3));
+  }
+  .pokeball-pointer::before {
+    content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: var(--pokeball-black); transform: translateY(-50%);
+  }
+  .pokeball-pointer::after {
+    content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 6px; height: 6px; border-radius: 9999px; background: var(--pokeball-white); border: 2px solid var(--pokeball-black);
+  }
+
+  @keyframes pointer-blink {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0.5; transform: translateY(-2px); }
+  }
   /* Helper classes that can be used progressively without refactors */
   .pdx-elev-1 { box-shadow: var(--pdx-shadow-1); }
   .pdx-elev-2 { box-shadow: var(--pdx-shadow-2); }

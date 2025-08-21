@@ -205,14 +205,15 @@ export function NatureRoulette() {
               </svg>
             </motion.div>
 
-            {/* Pointer */}
+            {/* Pointer (Pokéball) */}
             <motion.div
-              className={`absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-3 ${
+              className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 ${
                 showPointer ? "opacity-100" : "opacity-0"
               }`}
-              transition={{ duration: 0.1 }}
+              animate={isSpinning ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 0.6, repeat: isSpinning ? Infinity : 0 }}
             >
-              <div className="w-0 h-0 border-l-6 border-r-6 border-b-10 border-l-transparent border-r-transparent border-b-primary"></div>
+              <div className="pokeball-pointer" />
             </motion.div>
           </div>
         </div>
