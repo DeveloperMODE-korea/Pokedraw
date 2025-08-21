@@ -1,9 +1,11 @@
 // PokéAPI service layer with caching and error handling
 export interface PokeAPISprites {
   front_default: string | null
+  front_shiny: string | null
   other?: {
     "official-artwork"?: {
       front_default: string | null
+      front_shiny?: string | null
     }
   }
   versions?: {
@@ -11,6 +13,7 @@ export interface PokeAPISprites {
       "black-white"?: {
         animated?: {
           front_default: string | null
+          front_shiny?: string | null
         }
       }
     }
