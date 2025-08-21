@@ -220,13 +220,20 @@ export function IVRoulette() {
     const perfectCount = Object.values(ivs).filter((iv) => iv === 31).length
     const averagePercent = Math.round((total / (31 * 6)) * 100)
 
-    let grade = "F"
-    if (averagePercent >= 95) grade = "S+"
-    else if (averagePercent >= 90) grade = "S"
-    else if (averagePercent >= 80) grade = "A"
-    else if (averagePercent >= 70) grade = "B"
-    else if (averagePercent >= 60) grade = "C"
-    else if (averagePercent >= 50) grade = "D"
+    // Grade based on total (0~186)
+    let grade: string
+    if (total === 186) grade = "SSS"
+    else if (total >= 170) grade = "ss"
+    else if (total >= 140) grade = "s"
+    else if (total >= 120) grade = "A+"
+    else if (total >= 110) grade = "A"
+    else if (total >= 90) grade = "B+"
+    else if (total >= 80) grade = "B"
+    else if (total >= 60) grade = "C+"
+    else if (total >= 40) grade = "C"
+    else if (total >= 25) grade = "D"
+    else if (total >= 15) grade = "E"
+    else grade = "F"
 
     return { total, perfectCount, averagePercent, grade }
   }
