@@ -79,10 +79,10 @@ export function NatureRoulette() {
     const selectedNature = getRandomNature()
     const selectedIndex = NATURES.findIndex((n) => n.id === selectedNature.id)
 
-    // Empirical fix: The rotation calculation has a consistent offset of roughly -6 slices.
-    // We adjust the target index to compensate for this offset.
-    const indexOffset = -6
-    const adjustedIndex = (selectedIndex + indexOffset + NATURES.length) % NATURES.length
+    // Empirical fix: The rotation calculation has a consistent offset. 
+    // The wheel over-rotates by ~6 slices, so we adjust the target index to compensate.
+    const indexOffset = 6 // Positive offset to make the wheel rotate less
+    const adjustedIndex = (selectedIndex + indexOffset) % NATURES.length
 
     const anglePerSlice = 360 / NATURES.length
     const targetAngle = adjustedIndex * anglePerSlice // Use adjusted index
