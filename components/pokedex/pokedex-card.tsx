@@ -33,7 +33,7 @@ export function PokedexCard({ pokemon }: PokedexCardProps) {
             {pokemon.types.map((type) => (
               <Badge
                 key={type}
-                className={`text-white text-xs ${typeColors[type] || 'bg-gray-400'}`}
+                className={`text-xs ${typeColors[type] || 'bg-gray-400 text-white'}`}
               >
                 {typeKo[type] || type}
               </Badge>
