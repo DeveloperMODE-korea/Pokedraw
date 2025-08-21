@@ -12,7 +12,7 @@ export function PokemonAbilities({ pokemon }: PokemonAbilitiesProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Abilities</CardTitle>
+        <CardTitle>특성</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {pokemon.abilities.map(ability => (

@@ -30,7 +30,7 @@ export function PokemonAbout({ pokemon }: PokemonAboutProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>About</CardTitle>
+        <CardTitle>소개</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="italic text-center text-lg text-muted-foreground">

@@ -810,11 +810,12 @@ export async function getFullPokemonDetails(
     const abilities = await Promise.all(
         pokemonData.abilities?.map(async (a) => {
             const abilityData = await fetchWithCache<any>(a.ability.url);
+            const koreanEffect = abilityData.flavor_text_entries?.find((ft: any) => ft.language.name === 'ko')?.flavor_text;
             return {
                 name: a.ability.name,
-                koreanName: abilityData.names?.find(n => n.language.name === 'ko')?.name || a.ability.name,
+                koreanName: abilityData.names?.find((n: any) => n.language.name === 'ko')?.name || a.ability.name,
                 isHidden: a.is_hidden,
-                effect: abilityData.effect_entries?.find(e => e.language.name === 'en')?.short_effect || '',
+                effect: koreanEffect || abilityData.effect_entries?.find((e: any) => e.language.name === 'en')?.short_effect || '',
             };
         }) || []
     );
